@@ -1,14 +1,18 @@
 package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest;
 
 
-
+import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateProviderCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.ProviderCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.ProviderQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.CreateProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.ProviderResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.UpdateProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.CreateProviderCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.ProviderResourceFromEntityAssembler;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.UpdateProviderCommandFromResource;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,6 +44,21 @@ public class ProviderController {
         return new ResponseEntity<>(providerResource, HttpStatus.CREATED);
     }
 
+    @PutMapping("/edit")
+    public ResponseEntity<ProviderResource> updateProvider(@RequestBody UpdateProviderResource resource) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
+
+        UpdateProviderCommand updateProfileCommand = UpdateProviderCommandFromResource.toCommandFromResource(resource);
+        Optional<Provider> updatedProfileOptional = providerCommandService.handle(updateProfileCommand);
+
+        return updatedProfileOptional
+                .filter(updatedProfile -> updatedProfile.getUserId() == userId)
+                .map(updatedProfile -> ResponseEntity.ok(ProviderResourceFromEntityAssembler.toResourceFromEntity(updatedProfile)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     /*
     @GetMapping("/me")
     public ResponseEntity<ProfileResource> getMyProfile() {
@@ -52,20 +71,7 @@ public class ProviderController {
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
-    @PutMapping("/me/edit")
-    public ResponseEntity<ProfileResource> updateProfile(@RequestBody UpdateProfileResource resource) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        long userId = userDetails.getId();
 
-        UpdateProfileCommand updateProfileCommand = UpdateProfileCommandFromResource.toCommandFromResource(resource);
-        Optional<Profile> updatedProfileOptional = profileCommandService.handle(updateProfileCommand);
-
-        return updatedProfileOptional
-                .filter(updatedProfile -> updatedProfile.getUserId() == userId)
-                .map(updatedProfile -> ResponseEntity.ok(ProfileResourceFromEntityAssembler.toResourceFromEntity(updatedProfile)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
      */
 

@@ -36,8 +36,8 @@ public class Provider extends AuditableAbstractAggregateRoot<Provider> {
     }
 
     public void update(UpdateProviderCommand command) {
-        this.taxName = taxName;
-        this.ruc = ruc;
+        this.taxName = command.taxName();
+        this.ruc = command.ruc();
     }
 
 
