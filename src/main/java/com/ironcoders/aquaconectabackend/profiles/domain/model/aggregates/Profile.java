@@ -22,6 +22,7 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     private String documentNumber;
     @Column(nullable = false)
     private String documentType;
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false)
