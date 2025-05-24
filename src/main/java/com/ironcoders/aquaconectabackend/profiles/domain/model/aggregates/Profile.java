@@ -68,14 +68,14 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     }
 
 
-    public Profile(UpdateProfileCommand command){
+    public void update(UpdateProfileCommand command) {
         this.name = new PersonName(command.firstName(), command.lastName());
-        this.email= command.email();
+        this.email = command.email();
         this.documentNumber = command.documentNumber();
         this.documentType = command.documentType();
         this.phone = command.phone();
+        this.direction = command.direction();
     }
-
     public void setName(PersonName name) {
         this.name = name;
     }

@@ -50,7 +50,6 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
         return Optional.of(profile);
     }
 
-    @Override
     public Optional<Profile> handle(UpdateProfileCommand command) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -61,11 +60,10 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
         }
 
         Profile profile = existingProfile.get(0);
-
-        profile.updateName(command.firstName(), command.lastName());
-
+        profile.update(command);
         profileRepository.save(profile);
 
         return Optional.of(profile);
     }
+
 }
