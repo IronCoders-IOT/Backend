@@ -4,4 +4,5 @@ public enum Roles {
     ROLE_PROVIDER,
     ROLE_ADMIN,
     ROLE_RESIDENT,
+
 }
