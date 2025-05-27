@@ -5,4 +5,7 @@ public record CreateEventCommand(
         String qualityValue,
         String levelValue,
         Long sensorId
-) {}
+) {
+
+
+}

@@ -8,44 +8,47 @@ import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateE
 import com.ironcoders.aquaconectabackend.management.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.EventRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
-@Transactional
 public class EventCommandServiceImpl implements EventCommandService {
 
     private final EventRepository eventRepository;
 
     public EventCommandServiceImpl(EventRepository eventRepository) {
+
         this.eventRepository = eventRepository;
     }
 
     @Override
-    public void handle(CreateEventCommand command) {
-        EventAggregate event = new EventAggregate(
-                command.eventType(),
-                command.qualityValue(),
-                command.levelValue(),
-                command.sensorId()
-        );
-        eventRepository.save(event);
+    public Optional<EventAggregate> handle(CreateEventCommand command){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        var eventAggregate = new EventAggregate(command);
+
+        eventRepository.save(eventAggregate);
+        return Optional.of(eventAggregate);
+
+
     }
 
     @Override
-    public void handle(UpdateEventCommand command) {
-        EventAggregate event = eventRepository.findById(command.eventId())
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-        event.update(
-                command.eventType(),
-                command.qualityValue(),
-                command.levelValue(),
-                command.sensorId()
-        );
-        eventRepository.save(event);
+    public Optional<EventAggregate> handle(UpdateEventCommand command) {
+        return Optional.empty();
     }
 
     @Override
-    public void handle(DeleteEventCommand command) {
-        eventRepository.deleteById(command.eventId());
+    public Optional<EventAggregate> handle(DeleteEventCommand command) {
+        return Optional.empty();
     }
+
+
+
 }

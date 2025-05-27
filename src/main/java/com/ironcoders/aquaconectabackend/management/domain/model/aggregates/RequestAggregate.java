@@ -9,7 +9,6 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "requests")
 public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggregate> {
 
     @Id
