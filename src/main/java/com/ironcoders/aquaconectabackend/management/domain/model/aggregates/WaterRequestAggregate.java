@@ -1,9 +1,7 @@
 package com.ironcoders.aquaconectabackend.management.domain.model.aggregates;
 
 import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,6 +12,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "water_requests")
 public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterRequestAggregate> {
+
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer idWaterRequest;
 
     @NotNull
     @Column(name = "resident_id")

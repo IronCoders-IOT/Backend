@@ -6,6 +6,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetEven
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetEventsBySensorIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventQueryService;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateEventResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.EventResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.EventCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.EventResourceFromAggregateAssembler;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -52,7 +54,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createEvent(@RequestBody EventResource resource) {
+    public ResponseEntity<Void> createEvent(@RequestBody CreateEventResource resource) {
         var command = EventCommandFromResourceAssembler.toCreateCommand(resource);
         eventCommandService.handle(command);
         return ResponseEntity.ok().build();

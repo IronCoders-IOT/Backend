@@ -12,6 +12,10 @@ import lombok.Getter;
 @Table(name = "requests")
 public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggregate> {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer idRequest;
+
     @NotNull
     @Column(name = "resident_id")
     private Long residentId;

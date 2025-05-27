@@ -6,7 +6,9 @@ import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWate
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateEventResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.WaterRequestResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.EventCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
 import org.springframework.http.ResponseEntity;
@@ -52,11 +54,12 @@ public class WaterRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createWaterRequest(@RequestBody WaterRequestResource resource) {
+    public ResponseEntity<Void> createEvent(@RequestBody WaterRequestResource resource) {
         var command = WaterRequestCommandFromResourceAssembler.toCreateCommand(resource);
         waterRequestCommandService.handle(command);
         return ResponseEntity.ok().build();
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateWaterRequest(@PathVariable Long id, @RequestBody WaterRequestResource resource) {
