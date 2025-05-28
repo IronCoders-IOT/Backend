@@ -7,40 +7,40 @@ import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateR
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.RequestRepository;
 import jakarta.transaction.Transactional;
+
+import java.util.Optional;
+
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 public class RequestCommandServiceImpl implements RequestCommandService {
 
     private final RequestRepository requestRepository;
 
     public RequestCommandServiceImpl(RequestRepository requestRepository) {
+
         this.requestRepository = requestRepository;
     }
 
     @Override
-    public void handle(CreateRequestCommand command) {
-        RequestAggregate request = new RequestAggregate(
-                command.getResidentId(),
-                command.getProviderId(),
-                command.getTitle(),
-                command.getDescription(),
-                command.getStatus()
-        );
-        requestRepository.save(request);
+    public Optional<RequestAggregate> handle(CreateRequestCommand command) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        var requestAggregate = new RequestAggregate(command);
+        requestRepository.save(requestAggregate);
+        return Optional.of(requestAggregate);
     }
 
     @Override
-    public void handle(UpdateRequestCommand command) {
-        RequestAggregate request = requestRepository.findById(command.getRequestId())
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        request.update(command.getTitle(), command.getDescription(), command.getStatus());
-        requestRepository.save(request);
+    public Optional<RequestAggregate> handle(UpdateRequestCommand command) {
+        return Optional.empty();
+    }
+    @Override
+    public Optional<RequestAggregate> handle(DeleteRequestCommand command) {
+        return Optional.empty();
     }
 
-    @Override
-    public void handle(DeleteRequestCommand command) {
-        requestRepository.deleteById(command.getRequestId());
-    }
+        
 }

@@ -1,5 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.domain.model.aggregates;
 
+import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
 import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -11,28 +12,21 @@ import lombok.Getter;
 @Entity
 public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggregate> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idRequest;
+    
 
-    @NotNull
-    @Column(name = "resident_id")
+    @Column(nullable = false)
     private Long residentId;
 
-    @NotNull
-    @Column(name = "provider_id")
+    @Column(nullable = false)
     private Long providerId;
 
-    @NotBlank
-    @Size(max = 255)
+    @Column(nullable = false)
     private String title;
-
-    @NotBlank
-    @Size(max = 255)
+    
+    @Column(nullable = false)
     private String description;
-
-    @NotBlank
-    @Size(max = 50)
+    
+    @Column(nullable = false)
     private String status;
 
     public RequestAggregate() {}
@@ -45,10 +39,21 @@ public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggr
         this.status = status;
     }
 
-    public RequestAggregate update(String title, String description, String status) {
-        this.title = title;
-        this.description = description;
-        this.status = status;
-        return this;
+    public RequestAggregate(CreateRequestCommand command) {
+        this.residentId = command.residentId();
+        this.providerId = command.providerId();
+        this.title = command.title();
+        this.description = command.description();
+        this.status = command.status();
     }
+
+
+    //    public EventAggregate(CreateEventCommand command){
+    //    this.eventType= command.eventType();
+    //    this.qualityValue = command.qualityValue();
+    //    this.levelValue = command.levelValue();
+    //    this.sensorId = command.sensorId();
+   // }
+    //
+    
 }

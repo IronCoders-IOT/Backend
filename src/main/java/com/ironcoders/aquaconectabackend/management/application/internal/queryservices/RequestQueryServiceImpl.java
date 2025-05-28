@@ -1,14 +1,8 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.queryservices;
-
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteRequestCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestsByResidentIdQuery;
-import com.ironcoders.aquaconectabackend.management.domain.model.valueobjects.RequestStatus;
-import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestQueryService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.RequestRepository;
 import org.springframework.stereotype.Service;

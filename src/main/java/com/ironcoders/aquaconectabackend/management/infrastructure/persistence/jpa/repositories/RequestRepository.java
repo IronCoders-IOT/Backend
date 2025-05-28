@@ -10,7 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface RequestRepository extends JpaRepository<RequestAggregate, Long> {
-    Optional<RequestAggregate> findById(Long id);
-    List<RequestAggregate> findAll();
     List<RequestAggregate> findByResidentId(Long residentId);
 }

@@ -6,7 +6,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWate
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateEventResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateRequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.WaterRequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.EventCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestCommandFromResourceAssembler;

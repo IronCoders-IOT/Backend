@@ -1,6 +1,4 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.queryservices;
-
-
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.EventAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllEventsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetEventByIdQuery;
@@ -23,8 +21,7 @@ public class EventQueryServiceImpl implements EventQueryService {
 
     @Override
     public Optional<EventAggregate> handle(GetEventByIdQuery query) {
-        return eventRepository.findById(query.eventId());
-    }
+        return eventRepository.findById(query.eventId()); }
 
     @Override
     public List<EventAggregate> handle(GetAllEventsQuery query) {
@@ -33,6 +30,5 @@ public class EventQueryServiceImpl implements EventQueryService {
 
     @Override
     public List<EventAggregate> handle(GetEventsBySensorIdQuery query) {
-        return eventRepository.findBySensorId(query.sensorId());
-    }
+        return eventRepository.findBySensorId(query.sensorId());}
 }

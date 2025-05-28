@@ -1,6 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources;
 
-public record CreateEventResource(
+public record CreateRequestResource(
         String eventType,
         String qualityValue,
         String levelValue,

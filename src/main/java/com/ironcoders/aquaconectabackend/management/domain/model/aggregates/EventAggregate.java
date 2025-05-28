@@ -5,8 +5,6 @@ import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.Auditabl
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter

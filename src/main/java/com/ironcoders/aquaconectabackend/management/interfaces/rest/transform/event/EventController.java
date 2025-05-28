@@ -1,6 +1,4 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.event;
-
-
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateEventCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventQueryService;
@@ -37,38 +35,6 @@ public class EventController {
         return new ResponseEntity<>(eventResource, HttpStatus.CREATED);
 
     }
-
-
-
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<EventResource> getEventById(@PathVariable Long id) {
-//        return eventQueryService.handle(new GetEventByIdQuery(id))
-//                .map(EventResourceFromEntityAssembler::toResource)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-//
-//    @GetMapping("/sensor/{sensorId}")
-//    public List<EventResource> getEventsBySensor(@PathVariable Long sensorId) {
-//        return eventQueryService.handle(new GetEventsBySensorIdQuery(sensorId))
-//                .stream()
-//                .map(EventResourceFromEntityAssembler::toResource)
-//                .collect(Collectors.toList());
-//    }
-
-
-
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Void> updateEvent(@PathVariable Long id, @RequestBody EventResource resource) {
-//        var command = CreateEventCommandFromResourceAssembler.toUpdateCommand(id, resource);
-//        eventCommandService.handle(command);
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
-//        eventCommandService.handle(new DeleteEventCommand(id));
-//        return ResponseEntity.noContent().build();
-//    }
 }
+
+
