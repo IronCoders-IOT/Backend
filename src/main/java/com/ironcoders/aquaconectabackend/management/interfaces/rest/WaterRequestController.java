@@ -8,7 +8,6 @@ import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequest
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateRequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.WaterRequestResource;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.EventCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
 import org.springframework.http.ResponseEntity;

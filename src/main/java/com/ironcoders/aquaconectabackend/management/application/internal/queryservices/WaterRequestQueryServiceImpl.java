@@ -1,5 +1,4 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.queryservices;
-
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWaterRequestsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestByIdQuery;
@@ -32,6 +31,5 @@ public class WaterRequestQueryServiceImpl implements WaterRequestQueryService {
 
     @Override
     public List<WaterRequestAggregate> handle(GetWaterRequestsByResidentIdQuery query) {
-        return waterRequestRepository.findByResidentId(query.residentId());
-    }
+        return waterRequestRepository.findByResidentId(query.residentId()); }
 }

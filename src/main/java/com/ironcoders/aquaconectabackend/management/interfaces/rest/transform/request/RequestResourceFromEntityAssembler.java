@@ -4,14 +4,14 @@ import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Requ
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.RequestResource;
 
 public class RequestResourceFromEntityAssembler {
-    public static RequestResource toResource(RequestAggregate entity) {
+    public static RequestResource toResourceFromEntity(RequestAggregate aggregate) {
         return new RequestResource(
-                entity.getId(),
-                entity.getResidentId(),
-                entity.getProviderId(),
-                entity.getTitle(),
-                entity.getDescription(),
-                entity.getStatus()
+            aggregate.getId(),
+            aggregate.getResidentId(),
+            aggregate.getProviderId(),
+            aggregate.getTitle(),
+            aggregate.getDescription(),
+            aggregate.getStatus()
         );
     }
 }

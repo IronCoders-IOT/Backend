@@ -1,16 +1,16 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.commandservices;
-
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.RequestRepository;
-import jakarta.transaction.Transactional;
 
 import java.util.Optional;
 
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service

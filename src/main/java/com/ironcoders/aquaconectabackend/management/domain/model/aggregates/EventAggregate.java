@@ -39,11 +39,5 @@ public class EventAggregate extends AuditableAbstractAggregateRoot<EventAggregat
         this.sensorId = command.sensorId();
     }
 
-//    public EventAggregate update(String eventType, String qualityValue, String levelValue, Long sensorId) {
-//        this.eventType = eventType;
-//        this.qualityValue = qualityValue;
-//        this.levelValue = levelValue;
-//        this.sensorId = sensorId;
-//        return this;
-//    }
+
 }

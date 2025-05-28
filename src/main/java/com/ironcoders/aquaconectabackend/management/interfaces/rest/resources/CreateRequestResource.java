@@ -1,8 +1,9 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources;
 
 public record CreateRequestResource(
-        String eventType,
-        String qualityValue,
-        String levelValue,
-        Long sensorId
+        String title,
+        String description,
+        String status,
+        Long residentId,
+        Long providerId
 ) {}
