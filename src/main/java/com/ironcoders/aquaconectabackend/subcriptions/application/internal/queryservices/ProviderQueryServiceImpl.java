@@ -1,11 +1,10 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.queryservices;
 
 
-import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.GetProviderByUserIdQuery;
-import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.ProviderQueryService;
-import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.ProviderRepository;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,11 +1,12 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.comandservices;
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateProviderCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateProviderCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.services.ProviderCommandService;
-import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.ProviderRepository;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.services.provider.ProviderCommandService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,15 +18,22 @@ import java.util.Optional;
 public class ProviderCommandServiceImpl implements ProviderCommandService {
 
     private final ProviderRepository providerRepository;
+    private final ProfileRepository profileRepository;
 
-    public ProviderCommandServiceImpl(ProviderRepository providerRepository) {
+    public ProviderCommandServiceImpl(ProviderRepository providerRepository, ProfileRepository profileRepository) {
         this.providerRepository = providerRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Override
     public Optional<Provider> handle(CreateProviderCommand command) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        if (!profileRepository.findById(userDetails.getId()).isPresent()) {
+            throw new IllegalArgumentException("No se encontró un perfil para este usuario");
+        }
+
 
 
         var provider = new Provider(command, userDetails.getId());

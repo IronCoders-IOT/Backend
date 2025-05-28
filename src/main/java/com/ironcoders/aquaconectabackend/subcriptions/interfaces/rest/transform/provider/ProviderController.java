@@ -1,18 +1,15 @@
-package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest;
+package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.provider;
 
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateProviderCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateProviderCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.services.ProviderCommandService;
-import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.ProviderQueryService;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.CreateProviderResource;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.ProviderResource;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.UpdateProviderResource;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.CreateProviderCommandFromResourceAssembler;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.ProviderResourceFromEntityAssembler;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.UpdateProviderCommandFromResource;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.services.provider.ProviderCommandService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.CreateProviderResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.ProviderResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.UpdateProviderResource;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

@@ -1,4 +1,4 @@
-package com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories;
+package com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider;
 
 
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;

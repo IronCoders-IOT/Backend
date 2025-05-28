@@ -1,10 +1,9 @@
-package com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories;
+package com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider;
 
 
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.GetProviderByUserIdQuery;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ProviderQueryService {

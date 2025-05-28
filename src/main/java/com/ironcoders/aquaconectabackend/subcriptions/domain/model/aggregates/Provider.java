@@ -1,10 +1,9 @@
 package com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates;
 
 import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateProviderCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import lombok.Getter;
 
