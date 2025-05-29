@@ -5,6 +5,7 @@ import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.mo
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.provider.ProviderCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.CreateProviderResource;
@@ -56,20 +57,23 @@ public class ProviderController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /*
-    @GetMapping("/me")
-    public ResponseEntity<ProfileResource> getMyProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    @GetMapping(value = "/{providerId}/detail")
+    public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
+        // Consultar el proveedor por su ID
+        var query = new GetProviderByUserIdQuery(providerId);
+        var providerOptional = providerQueryService.handle(query);
 
-        var getProfileByIdQuery = new GetProfileByIdQuery(userDetails.getId());
-        var profile = profileQueryService.handle(getProfileByIdQuery);
-        if (profile.isEmpty()) return ResponseEntity.notFound().build();
-        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
-        return ResponseEntity.ok(profileResource);
+        // Validar existencia
+        if (providerOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Armar el recurso y retornar
+        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntity(providerOptional.get());
+        return ResponseEntity.ok(resource);
     }
 
 
-     */
+
 
 }

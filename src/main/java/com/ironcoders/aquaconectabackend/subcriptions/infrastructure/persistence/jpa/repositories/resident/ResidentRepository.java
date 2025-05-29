@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface ResidentRepository extends JpaRepository<Resident, Long> {
     List<Resident> findByUserId(Long userId);
+    List<Resident> findByProviderId(Long providerId);
 
 }
