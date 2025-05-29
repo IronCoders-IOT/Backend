@@ -29,7 +29,7 @@ public class Resident extends AuditableAbstractAggregateRoot<Resident> {
     public Resident(CreateResidentCommand command, Long providerId){
         this.firstName= command.firstName();
         this.lastName= command.lastName();
-        this.userId = 100L;
+        this.userId = 100L;  // Change
         this.providerId= providerId;
 
 

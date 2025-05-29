@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,6 +44,20 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
 
     @Override
     public Optional<Resident> handle(UpdateResidentCommand command) {
-        return Optional.empty();
+
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        List<Resident> existingResident = residentRepository.findByUserId(userDetails.getId());
+        if (existingResident.isEmpty()) {
+            throw new IllegalArgumentException("No resident found for this user");
+        }
+        Resident resident = existingResident.get(0);
+        resident.update(command);
+        residentRepository.save(resident);
+
+        return Optional.of(resident);
+
     }
 }
