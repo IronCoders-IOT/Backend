@@ -4,6 +4,7 @@ package com.ironcoders.aquaconectabackend.profiles.application.internal.queryser
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetAllProfilesQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByIdQuery;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByUserIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.services.ProfileQueryService;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,12 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
         return profileRepository.findById(query.id());
     }
 
+    @Override
+    public Optional<Profile> handle(GetProfileByUserIdQuery query) {
+        return profileRepository.findByUserId(query.userId())
+                .stream()
+                .findFirst();
+    }
 
     @Override
     public List<Profile> handle(GetAllProfilesQuery query) {

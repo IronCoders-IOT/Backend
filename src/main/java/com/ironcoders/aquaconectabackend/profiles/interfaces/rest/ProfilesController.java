@@ -6,6 +6,7 @@ import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profil
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateProfileCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.UpdateProfileCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByIdQuery;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByUserIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.services.ProfileCommandService;
 import com.ironcoders.aquaconectabackend.profiles.domain.services.ProfileQueryService;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.resources.CreateProfileResource;
@@ -50,7 +51,7 @@ public class ProfilesController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        var getProfileByIdQuery = new GetProfileByIdQuery(userDetails.getId());
+        var getProfileByIdQuery = new GetProfileByUserIdQuery(userDetails.getId());
         var profile = profileQueryService.handle(getProfileByIdQuery);
         if (profile.isEmpty()) return ResponseEntity.notFound().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
