@@ -1,7 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.commandservices;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.RequestRepository;
@@ -37,10 +36,7 @@ public class RequestCommandServiceImpl implements RequestCommandService {
     public Optional<RequestAggregate> handle(UpdateRequestCommand command) {
         return Optional.empty();
     }
-    @Override
-    public Optional<RequestAggregate> handle(DeleteRequestCommand command) {
-        return Optional.empty();
-    }
+
 
         
 }

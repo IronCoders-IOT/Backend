@@ -2,15 +2,19 @@ package com.ironcoders.aquaconectabackend.management.application.internal.comman
 
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterRequestCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.WaterRequestRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
-@Transactional
+
 public class WaterRequestCommandServiceImpl implements WaterRequestCommandService {
 
     private final WaterRequestRepository waterRequestRepository;
@@ -20,31 +24,24 @@ public class WaterRequestCommandServiceImpl implements WaterRequestCommandServic
     }
 
     @Override
-    public void handle(CreateWaterRequestCommand command) {
-        WaterRequestAggregate req = new WaterRequestAggregate(
-                command.residentId(),
-                command.providerId(),
-                command.requestedLiters(),
-                command.status(),
-                command.deliveredAt()
-        );
-        waterRequestRepository.save(req);
+
+    public Optional<WaterRequestAggregate> handle(CreateWaterRequestCommand command){
+
+        var waterRequestAggregate = new WaterRequestAggregate(command);
+        waterRequestRepository.save(waterRequestAggregate);
+        return Optional.of(waterRequestAggregate);
+
+
     }
 
-    @Override
-    public void handle(UpdateWaterRequestCommand command) {
-        WaterRequestAggregate req = waterRequestRepository.findById(command.waterRequestId())
-                .orElseThrow(() -> new RuntimeException("WaterRequest not found"));
-        req.update(
-                command.requestedLiters(),
-                command.status(),
-                command.deliveredAt()
-        );
-        waterRequestRepository.save(req);
-    }
+
 
     @Override
-    public void handle(DeleteWaterRequestCommand command) {
-        waterRequestRepository.deleteById(command.waterRequestId());
+    public Optional<WaterRequestAggregate> handle(UpdateWaterRequestCommand command) {
+
+        return Optional.empty();
+
     }
+
+
 }

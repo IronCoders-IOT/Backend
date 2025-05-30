@@ -12,8 +12,6 @@ import lombok.Getter;
 @Entity
 public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggregate> {
 
-    
-
     @Column(nullable = false)
     private Long residentId;
 

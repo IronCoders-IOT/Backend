@@ -1,11 +1,12 @@
 package com.ironcoders.aquaconectabackend.management.domain.services;
 
+import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterRequestCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateWaterRequestCommand;
 
+import java.util.Optional;
+
 public interface WaterRequestCommandService {
-    void handle(CreateWaterRequestCommand command);
-    void handle(UpdateWaterRequestCommand command);
-    void handle(DeleteWaterRequestCommand command);
+    Optional<WaterRequestAggregate> handle(CreateWaterRequestCommand command);
+    Optional<WaterRequestAggregate>handle(UpdateWaterRequestCommand command);
 }

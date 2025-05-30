@@ -2,15 +2,12 @@ package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.r
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestQueryService;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.CreateRequestResource;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.RequestResource;
-import io.swagger.v3.oas.annotations.Operation;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.CreateRequestResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.RequestResource;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RestController

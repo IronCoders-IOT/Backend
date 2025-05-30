@@ -1,10 +1,10 @@
-package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform;
+package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.water;
 
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.WaterRequestResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.water.WaterRequestResource;
 
 public class WaterRequestResourceFromAggregateAssembler {
-    public static WaterRequestResource toResource(WaterRequestAggregate aggregate) {
+    public static WaterRequestResource toResourceFromEntity(WaterRequestAggregate aggregate) {
         return new WaterRequestResource(
                 aggregate.getId(),
                 aggregate.getResidentId(),

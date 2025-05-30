@@ -1,4 +1,4 @@
-package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources;
+package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request;
 
 public record CreateRequestResource(
         String title,

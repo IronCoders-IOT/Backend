@@ -1,4 +1,4 @@
-package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources;
+package com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.water;
 
 
 import java.time.LocalDateTime;

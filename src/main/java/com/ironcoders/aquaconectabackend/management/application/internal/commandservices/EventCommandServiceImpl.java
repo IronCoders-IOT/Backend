@@ -1,7 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.commandservices;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.EventAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateEventCommand;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.DeleteEventCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateEventCommand;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.EventRepository;
@@ -41,10 +40,7 @@ public class EventCommandServiceImpl implements EventCommandService {
         return Optional.empty();
     }
 
-    @Override
-    public Optional<EventAggregate> handle(DeleteEventCommand command) {
-        return Optional.empty();
-    }
+
 
 
 
