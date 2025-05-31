@@ -8,6 +8,12 @@ public class CreateResidentCommandFromResourceAssembler {
     public static CreateResidentCommand toCommandFromResource(CreateResidentResource resource) {
         return new CreateResidentCommand(
                 resource.firstName(),
-                resource.lastName());
+                resource.lastName(),
+                resource.email(),
+                resource.direction(),
+                resource.documentNumber(),
+                resource.documentType(),
+                resource.phone()
+        );
     }
 }

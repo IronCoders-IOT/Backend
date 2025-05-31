@@ -4,15 +4,12 @@ import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.mo
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.CreateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.UpdateSubscriptionCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.subscription.GetAllSubscriptionsByResidentId;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.subscription.SubscriptionCommandService;
-import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,8 +33,19 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
         return Optional.of(subscription);
     }
 
+
+
+    @Override
+    public void createForResident(Long residentId) {
+        Subscription subscription = new Subscription(residentId);
+        subscriptionRepository.save(subscription);
+    }
+
+
     @Override
     public Optional<Subscription> handle(UpdateSubscriptionCommand command) {
         return Optional.empty();
     }
+
+
 }

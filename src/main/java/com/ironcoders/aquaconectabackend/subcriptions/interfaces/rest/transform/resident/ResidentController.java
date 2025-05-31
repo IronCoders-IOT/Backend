@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.UpdateResidentCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentByUserIdQuery;
@@ -41,13 +42,24 @@ public class ResidentController {
     }
 
     @PostMapping
-    public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource){
-        CreateResidentCommand createResidentCommand= CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource);
-        var resident = residentCommandService.handle(createResidentCommand);
-        if (resident.isEmpty())return ResponseEntity.badRequest().build();
-        var residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntity(resident.get());
+    public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) {
+        // Convertimos el recurso a comando
+        CreateResidentCommand command = CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource);
+
+        // Ejecutamos el caso de uso
+        ResidentWithCredentials result = residentCommandService.handle(command);
+
+        // Convertimos a recurso incluyendo username y password generados
+        ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(
+                result.resident(),
+                result.username(),
+                result.password()
+        );
+
         return new ResponseEntity<>(residentResource, HttpStatus.CREATED);
     }
+
+
     @GetMapping("/by-provider/{providerId}")
     public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable Long providerId) {
         var query = new GetResidentsByProviderIdQuery(providerId);

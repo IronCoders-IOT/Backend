@@ -4,6 +4,7 @@ import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.mo
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateProfileCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.UpdateProfileCommand;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.valueobjects.PersonName;
 import com.ironcoders.aquaconectabackend.profiles.domain.services.ProfileCommandService;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import org.springframework.security.core.Authentication;
@@ -65,5 +66,29 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
         return Optional.of(profile);
     }
+
+    @Override
+    public void handle(Long userId, CreateProfileCommand command) {
+        // Verifica si ya existe un perfil para el usuario
+        List<Profile> existingProfile = profileRepository.findByUserId(userId);
+
+        if( !existingProfile.isEmpty() ) {
+            throw new IllegalArgumentException("A profile already exists for this user");
+        }
+
+        PersonName name = new PersonName(command.firstName(), command.lastName());
+
+        Profile profile = new Profile(
+                name,
+                command.email(),
+                command.direction(),
+                command.documentNumber(),
+                command.documentType(),
+                userId,
+                command.phone()
+        );
+        profileRepository.save(profile);
+    }
+
 
 }

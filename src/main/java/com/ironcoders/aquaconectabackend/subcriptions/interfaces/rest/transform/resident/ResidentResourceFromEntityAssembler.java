@@ -7,10 +7,34 @@ import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.resident.ResidentResource;
 
 public class ResidentResourceFromEntityAssembler {
-    public static ResidentResource toResourceFromEntity(Resident entity) {
-        return new ResidentResource(entity.getId(),entity.getFirstName(), entity.getLastName(),entity.getProviderId(),entity.getUserId());
 
+    // Caso básico sin credenciales
+    public static ResidentResource toResourceFromEntity(Resident entity) {
+        return new ResidentResource(
+                entity.getId(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getProviderId(),
+                entity.getUserId(),
+                null,     // username vacío
+                null      // password vacío
+        );
     }
 
-
+    // Caso con credenciales generadas (crear)
+    public static ResidentResource toResourceFromEntityWithCredentials(
+            Resident entity,
+            String username,
+            String password
+    ) {
+        return new ResidentResource(
+                entity.getId(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getProviderId(),
+                entity.getUserId(),
+                username,
+                password
+        );
+    }
 }
