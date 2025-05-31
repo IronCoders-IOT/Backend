@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -41,7 +42,7 @@ public class SubscriptionController {
     }
 
     @GetMapping("/resident/{id}")
-    public ResponseEntity<SubscriptionResource> getSubscriptionsByResidentId(@PathVariable Long id){
+    public ResponseEntity<SubscriptionResource> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
 
         var query = new GetAllSubscriptionsByResidentId(id);
         var subscriptions = subscriptionQueryService.handle(query);
@@ -51,7 +52,7 @@ public class SubscriptionController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<SubscriptionResource>> getSubscriptions() {
+    public ResponseEntity<List<SubscriptionResource>> getSubscriptions() throws AccessDeniedException {
         var query = new GetAllSubscriptions();
         var subscriptions = subscriptionQueryService.handle(query);
         if (subscriptions.isEmpty()) return ResponseEntity.noContent().build();

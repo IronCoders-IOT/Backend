@@ -18,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,11 +42,15 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
     }
 
     @Override
-    public ResidentWithCredentials handle(CreateResidentCommand command) {
+    public ResidentWithCredentials handle(CreateResidentCommand command) throws AccessDeniedException {
         // 1. Obtener usuario autenticado (el proveedor que está registrando)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long providerId = userDetails.getId();
+
+        if (userDetails.getAuthorities().stream().noneMatch(auth -> auth.getAuthority().equals("ROLE_PROVIDER"))) {
+            throw new AccessDeniedException("Solo los usuarios con rol PROVIDER pueden registrar residentes.");
+        }
 
         // 2. Validar que el proveedor tenga perfil
         if (!profileRepository.findById(providerId).isPresent()) {

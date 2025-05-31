@@ -8,11 +8,12 @@ import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.prov
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.UpdateResidentCommand;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 
 public interface ResidentCommandService {
 
-    ResidentWithCredentials handle(CreateResidentCommand command);
+    ResidentWithCredentials handle(CreateResidentCommand command) throws AccessDeniedException;
     Optional<Resident> handle(UpdateResidentCommand command);
 
 }

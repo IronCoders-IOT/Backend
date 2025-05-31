@@ -1,6 +1,7 @@
 package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.resident;
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.CreateResidentCommand;
@@ -22,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,17 +34,21 @@ public class ResidentController {
 
     private final ResidentCommandService residentCommandService;
     private final ResidentQueryService residentQueryService;
+    IamContextFacade iamContextFacade;
+
     //private final ResidentQueryService residentQueryService;
 
 
-    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService) {
+    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade) {
         this.residentCommandService = residentCommandService;
        // this.residentQueryService = residentQueryService;
         this.residentQueryService = residentQueryService;
+        this.iamContextFacade = iamContextFacade;
+
     }
 
     @PostMapping
-    public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) {
+    public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
         // Convertimos el recurso a comando
         CreateResidentCommand command = CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource);
 
@@ -65,20 +71,31 @@ public class ResidentController {
         var query = new GetResidentsByProviderIdQuery(providerId);
         var residents = residentQueryService.handle(query);
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
-        var residentResources = residents.stream().map(ResidentResourceFromEntityAssembler::toResourceFromEntity).toList();
-        return ResponseEntity.ok(residentResources);
 
+        var residentResources = residents.stream().map(resident -> {
+            String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+        }).toList();
+
+        return ResponseEntity.ok(residentResources);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<List<ResidentResource>> getResidentsByUserId(@RequestParam Long userId) {
         var query = new GetResidentByUserIdQuery(userId);
         var residents = residentQueryService.handle(query);
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
-        var residentResources = residents.stream().map(ResidentResourceFromEntityAssembler::toResourceFromEntity).toList();
-        return ResponseEntity.ok(residentResources);
 
+        // Obtener username para cada userId del residente
+        var residentResources = residents.stream().map(resident -> {
+            String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+        }).toList();
+
+        return ResponseEntity.ok(residentResources);
     }
+
 
 
     @PutMapping("/me/edit")
