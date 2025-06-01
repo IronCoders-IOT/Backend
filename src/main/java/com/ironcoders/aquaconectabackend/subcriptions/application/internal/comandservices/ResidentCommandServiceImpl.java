@@ -58,7 +58,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         }
 
         // 3. Crear nuevo usuario IAM con ROLE_RESIDENT
-        String username = command.documentNumber();
+        String username = command.firstName() + "." + command.lastName();
         String password = command.documentNumber();
 
         Long newUserId = iamContextFacade.createUser(
