@@ -3,7 +3,9 @@ package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.CreateSubscriptionCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.UpdateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.subscription.GetAllSubscriptions;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.subscription.GetAllSubscriptionsByResidentId;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.subscription.GetSubscriptionByUserId;
@@ -12,6 +14,7 @@ import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.subscription.CreateSubscriptionResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.subscription.SubscriptionResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.subscription.UpdateSubscriptionResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -72,7 +75,24 @@ public class SubscriptionController {
         return ResponseEntity.ok(resources);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<SubscriptionResource> updateSubscription(
+            @PathVariable Long id,
+            @RequestBody UpdateSubscriptionResource resource
+    ) {
+        // Convertir el UpdateSubscriptionResource en UpdateSubscriptionCommand
+        UpdateSubscriptionCommand command = UpdateSubscriptionCommandFromResource.toCommand(id, resource);
 
+        Optional<Subscription> updated = subscriptionCommandService.handle(command);
+        if (updated.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Subscription agg = updated.get();
+        // Convertir la entidad agregada a recurso (DTO) para la respuesta
+        SubscriptionResource responseBody = SubscriptionResourceFromEntityAssembler.toResourceFromEntity(agg);
+        return ResponseEntity.ok(responseBody);
+    }
 
 
 
