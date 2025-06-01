@@ -33,7 +33,7 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
     }
 
     @Override
-    public Optional<Resident> findByUserId(long userId) {
+    public Optional<Resident> findByUserId(Long userId) {
         return residentRepository.findById(userId);
     }
 

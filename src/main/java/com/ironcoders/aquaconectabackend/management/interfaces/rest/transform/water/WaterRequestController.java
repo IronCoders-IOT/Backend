@@ -1,12 +1,15 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.water;
 
+import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterRequestCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWaterRequestsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.water.CreateWaterRequestResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.water.UpdateWaterResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.water.WaterRequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.request.RequestResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -57,7 +62,7 @@ public class WaterRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<WaterRequestResource> createWaterRequest(@RequestBody CreateWaterRequestResource resource) {
+    public ResponseEntity<WaterRequestResource> createWaterRequest(@RequestBody CreateWaterRequestResource resource) throws AccessDeniedException {
 
         CreateWaterRequestCommand command = CreateWaterRequestCommandFromResourceAssembler.toCommandFromResource(resource);
         var waterRequestAggregate = waterRequestCommandService.handle(command);
@@ -65,6 +70,20 @@ public class WaterRequestController {
         var waterResource = WaterRequestResourceFromAggregateAssembler.toResourceFromEntity(waterRequestAggregate.get());
         return new ResponseEntity<>(waterResource, HttpStatus.CREATED);
 
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<WaterRequestResource> updateWaterRequest(
+            @PathVariable Long id,
+            @RequestBody UpdateWaterResource resource) throws AccessDeniedException {
+
+        UpdateWaterRequestCommand command = UpdateWaterCommandFromResource.toCommandFromResource(id, resource);
+
+        Optional<WaterRequestAggregate> result = waterRequestCommandService.handle(command);
+
+        return result
+                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 

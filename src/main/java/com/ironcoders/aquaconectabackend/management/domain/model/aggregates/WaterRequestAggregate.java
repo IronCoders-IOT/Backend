@@ -3,12 +3,9 @@ package com.ironcoders.aquaconectabackend.management.domain.model.aggregates;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-
 @Getter
 @Entity
 public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterRequestAggregate> {
@@ -25,10 +22,16 @@ public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterR
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime deliveredAt;
 
-    public WaterRequestAggregate() {}
+    public WaterRequestAggregate(Long residentId, Long providerId, String requestedLiters, String status, LocalDateTime deliveredAt) {
+        this.residentId = residentId;
+        this.providerId = providerId;
+        this.requestedLiters = requestedLiters;
+        this.status = status;
+        this.deliveredAt = null;
+    }
 
     public WaterRequestAggregate(CreateWaterRequestCommand command) {
         this.residentId = command.residentId();
@@ -38,10 +41,13 @@ public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterR
         this.deliveredAt = command.deliveredAt();
     }
 
-    public WaterRequestAggregate update(String requestedLiters, String status, LocalDateTime deliveredAt) {
-        this.requestedLiters = requestedLiters;
+    public WaterRequestAggregate update(String status, LocalDateTime deliveredAt) {
         this.status = status;
         this.deliveredAt = deliveredAt;
         return this;
     }
+    public WaterRequestAggregate() {
+    }
+
+
 }

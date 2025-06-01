@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ResidentQueryService{
     Optional<Resident> handle(GetResidentByUserIdQuery query);
     List<Resident> handle(GetResidentsByProviderIdQuery query);
-    Optional<Resident> findByUserId(long userId);
+    Optional<Resident> findByUserId(Long userId);
 }
