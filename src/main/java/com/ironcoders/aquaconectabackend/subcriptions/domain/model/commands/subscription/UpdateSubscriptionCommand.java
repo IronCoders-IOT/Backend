@@ -1,4 +1,9 @@
 package com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription;
 
-public record UpdateSubscriptionCommand() {
-}
+import java.time.LocalDate;
+
+public record UpdateSubscriptionCommand(
+        Long id,
+        LocalDate endDate,
+        String status
+) {}

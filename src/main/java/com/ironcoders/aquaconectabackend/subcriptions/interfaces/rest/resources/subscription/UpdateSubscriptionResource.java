@@ -1,4 +1,8 @@
 package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.subscription;
 
-public record UpdateSubscriptionResource() {
-}
+import java.time.LocalDate;
+
+public record UpdateSubscriptionResource(
+        String status,
+        LocalDate endDate
+) {}
