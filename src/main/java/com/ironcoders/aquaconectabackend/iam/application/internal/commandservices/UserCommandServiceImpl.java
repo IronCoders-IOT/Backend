@@ -11,6 +11,8 @@ import com.ironcoders.aquaconectabackend.iam.domain.model.valueobjects.Roles;
 import com.ironcoders.aquaconectabackend.iam.domain.services.UserCommandService;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,8 @@ public class UserCommandServiceImpl implements UserCommandService {
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
     }
+
+
     @Override
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
