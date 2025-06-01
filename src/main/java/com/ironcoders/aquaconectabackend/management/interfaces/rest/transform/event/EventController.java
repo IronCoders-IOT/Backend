@@ -1,5 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.event;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateEventCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllEventsBySensorId;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.event.CreateEventResource;
@@ -7,10 +8,10 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.ev
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -34,6 +35,15 @@ public class EventController {
         var eventResource= EventResourceFromEntityAssembler.toResourceFromEntity(event.get());
         return new ResponseEntity<>(eventResource, HttpStatus.CREATED);
 
+    }
+
+    @GetMapping("/sensor/{id}")
+    public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
+        var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
+        var resources = events.stream()
+                .map(EventResourceFromEntityAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
     }
 }
 
