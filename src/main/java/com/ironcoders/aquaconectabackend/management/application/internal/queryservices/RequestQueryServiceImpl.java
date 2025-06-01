@@ -1,8 +1,8 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.queryservices;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
-import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestByIdQuery;
-import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestsByResidentIdQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestQueryService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.RequestRepository;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,16 @@ public class RequestQueryServiceImpl implements RequestQueryService {
 
     @Override
     public Optional<RequestAggregate> handle(GetRequestByIdQuery query) {
-        return requestRepository.findById(query.requestId());    }
-
-    @Override
-    public List<RequestAggregate> handle(GetAllRequestsQuery query) {
-        return requestRepository.findAll(); // No ALL (solo findAll)
+        return requestRepository.findById(query.requestId());
     }
 
     @Override
-    public List<RequestAggregate> handle(GetRequestsByResidentIdQuery query) {
-        return requestRepository.findByResidentId(query.residentId());    }
+    public List<RequestAggregate> handle(GetAllRequestsByProviderIdQuery query) {
+        return requestRepository.findByProviderId(query.providerId());
+    }
+
+    @Override
+    public List<RequestAggregate> handle(GetAllRequestsByResidentIdQuery query) {
+        return requestRepository.findByResidentId(query.residentId());
+    }
 }
