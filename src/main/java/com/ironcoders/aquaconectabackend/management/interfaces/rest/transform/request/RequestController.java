@@ -2,6 +2,9 @@ package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.r
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateRequestCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByProviderIdQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByResidentIdQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.RequestQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.CreateRequestResource;
@@ -13,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -53,5 +58,32 @@ public class RequestController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-   
+
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RequestResource> getRequestById(@PathVariable Long id) {
+        return requestQueryService.handle(new GetRequestByIdQuery(id))
+                .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/resident/{residentId}")
+    public ResponseEntity<List<RequestResource>> getRequestsByResident(@PathVariable Long residentId) {
+        var requests = requestQueryService.handle(new GetAllRequestsByResidentIdQuery(residentId));
+        var resources = requests.stream()
+                .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
+    }
+
+    @GetMapping("/provider/{providerId}")
+    public ResponseEntity<List<RequestResource>> getRequestsByProvider(@PathVariable Long providerId) {
+        var requests = requestQueryService.handle(new GetAllRequestsByProviderIdQuery(providerId));
+        var resources = requests.stream()
+                .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
+    }
 }
