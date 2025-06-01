@@ -28,6 +28,14 @@ public class ProviderQueryServiceImpl implements ProviderQueryService {
         return Optional.of(providers.get(0));
     }
 
+    @Override
+    public Optional<Provider> findByUserId(long userId) {
+        List<Provider> providers = providerRepository.findByUserId(userId);
+        if (providers.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(providers.get(0));
+    }
 
 
 }

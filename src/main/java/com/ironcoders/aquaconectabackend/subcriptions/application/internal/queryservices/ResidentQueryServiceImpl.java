@@ -32,4 +32,9 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
         return residentRepository.findByProviderId(query.providerId());
     }
 
+    @Override
+    public Optional<Resident> findByUserId(long userId) {
+        return residentRepository.findById(userId);
+    }
+
 }

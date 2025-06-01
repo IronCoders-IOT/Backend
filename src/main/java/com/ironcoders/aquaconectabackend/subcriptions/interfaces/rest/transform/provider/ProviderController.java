@@ -2,6 +2,8 @@ package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform
 
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
+import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
@@ -27,20 +29,35 @@ import java.util.Optional;
 public class ProviderController {
     private final ProviderCommandService providerCommandService;
     private final ProviderQueryService providerQueryService;
+    private final ProfileRepository profileRepository;
 
-    public ProviderController(ProviderCommandService providerCommandService, ProviderQueryService providerQueryService) {
+    public ProviderController(ProviderCommandService providerCommandService, ProviderQueryService providerQueryService, ProfileRepository profileRepository) {
         this.providerCommandService = providerCommandService;
         this.providerQueryService = providerQueryService;
+        this.profileRepository = profileRepository;
     }
 
     @PostMapping
     public ResponseEntity<ProviderResource> createProfile(@RequestBody CreateProviderResource resource) {
         CreateProviderCommand createProviderCommand = CreateProviderCommandFromResourceAssembler.toCommandFromResource(resource);
-        var provider = providerCommandService.handle(createProviderCommand);
-        if (provider.isEmpty()) return ResponseEntity.badRequest().build();
-        var providerResource = ProviderResourceFromEntityAssembler.toResourceFromEntity(provider.get());
+
+        var providerOptional = providerCommandService.handle(createProviderCommand);
+        if (providerOptional.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var provider = providerOptional.get();
+
+        // Obtener el perfil recién creado
+        var profileOptional = profileRepository.findById(provider.getUserId());
+        if (profileOptional.isEmpty()) {
+            return ResponseEntity.internalServerError().build(); // No debería pasar si todo funcionó bien
+        }
+
+        var providerResource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
         return new ResponseEntity<>(providerResource, HttpStatus.CREATED);
     }
+
 
     @PutMapping("/edit")
     public ResponseEntity<ProviderResource> updateProvider(@RequestBody UpdateProviderResource resource) {
@@ -48,28 +65,44 @@ public class ProviderController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
-        UpdateProviderCommand updateProfileCommand = UpdateProviderCommandFromResource.toCommandFromResource(resource);
-        Optional<Provider> updatedProfileOptional = providerCommandService.handle(updateProfileCommand);
+        UpdateProviderCommand updateProviderCommand = UpdateProviderCommandFromResource.toCommandFromResource(resource);
+        Optional<Provider> updatedProviderOptional = providerCommandService.handle(updateProviderCommand);
 
-        return updatedProfileOptional
-                .filter(updatedProfile -> updatedProfile.getUserId() == userId)
-                .map(updatedProfile -> ResponseEntity.ok(ProviderResourceFromEntityAssembler.toResourceFromEntity(updatedProfile)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        if (updatedProviderOptional.isEmpty() || updatedProviderOptional.get().getUserId() != userId) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Provider updatedProvider = updatedProviderOptional.get();
+
+        // Obtener el perfil actualizado
+        Optional<Profile> profileOptional = profileRepository.findById(userId);
+        if (profileOptional.isEmpty()) {
+            return ResponseEntity.internalServerError().build(); // No debería pasar
+        }
+
+        ProviderResource response = ProviderResourceFromEntityAssembler.toResourceFromEntities(updatedProvider, profileOptional.get());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/{providerId}/detail")
     public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
-        // Consultar el proveedor por su ID
+        // Obtener el proveedor
         var query = new GetProviderByUserIdQuery(providerId);
         var providerOptional = providerQueryService.handle(query);
 
-        // Validar existencia
         if (providerOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        // Armar el recurso y retornar
-        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntity(providerOptional.get());
+        var provider = providerOptional.get();
+
+        // Obtener el perfil asociado al usuario del proveedor
+        var profileOptional = profileRepository.findById(provider.getUserId());
+        if (profileOptional.isEmpty()) {
+            return ResponseEntity.internalServerError().build(); // No debería pasar
+        }
+
+        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
         return ResponseEntity.ok(resource);
     }
 

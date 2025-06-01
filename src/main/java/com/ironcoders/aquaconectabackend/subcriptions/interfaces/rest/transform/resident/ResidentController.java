@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.CreateResidentCommand;
@@ -9,6 +10,7 @@ import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resi
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.resident.ResidentCommandService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.resident.ResidentQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.UpdateProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.resident.CreateResidentResource;
@@ -35,16 +37,17 @@ public class ResidentController {
     private final ResidentCommandService residentCommandService;
     private final ResidentQueryService residentQueryService;
     IamContextFacade iamContextFacade;
-
+    private final ProviderQueryService providerQueryService;
     //private final ResidentQueryService residentQueryService;
 
 
-    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade) {
+    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade, ProviderQueryService providerQueryService) {
         this.residentCommandService = residentCommandService;
        // this.residentQueryService = residentQueryService;
         this.residentQueryService = residentQueryService;
         this.iamContextFacade = iamContextFacade;
 
+        this.providerQueryService = providerQueryService;
     }
 
     @PostMapping
@@ -79,6 +82,68 @@ public class ResidentController {
 
         return ResponseEntity.ok(residentResources);
     }
+
+
+
+    @GetMapping
+    public ResponseEntity<List<ResidentResource>> getResidentsForAuthenticatedProvider() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
+
+        // Buscar el proveedor por su userId
+        Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
+        if (providerOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // o 404 si prefieres
+        }
+
+        Long providerId = providerOptional.get().getId();
+
+        // Consultar residentes
+        var query = new GetResidentsByProviderIdQuery(providerId);
+        var residents = residentQueryService.handle(query);
+        if (residents.isEmpty()) return ResponseEntity.notFound().build();
+
+        var residentResources = residents.stream().map(resident -> {
+            String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+        }).toList();
+
+        return ResponseEntity.ok(residentResources);
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<ResidentResource> getAuthenticatedResident() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
+
+        // Buscar residente por su userId
+        Optional<Resident> residentOptional = residentQueryService.findByUserId(userId);
+        if (residentOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resident resident = residentOptional.get();
+        String username = iamContextFacade.fetchUsernameByUserId(userId);
+
+        ResidentResource resource = ResidentResourceFromEntityAssembler
+                .toResourceFromEntityWithCredentials(resident, username, null);
+
+        return ResponseEntity.ok(resource);
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
     @GetMapping("/{id}")
