@@ -106,6 +106,32 @@ public class ProviderController {
         return ResponseEntity.ok(resource);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ProviderResource> getMyProviderDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        // Obtener el proveedor a partir del userId
+        var query = new GetProviderByUserIdQuery(userId);
+        var providerOptional = providerQueryService.handle(query);
+
+        if (providerOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var provider = providerOptional.get();
+
+        // Obtener el perfil asociado
+        var profileOptional = profileRepository.findById(provider.getUserId());
+        if (profileOptional.isEmpty()) {
+            return ResponseEntity.internalServerError().build(); // No debería ocurrir
+        }
+
+        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
+        return ResponseEntity.ok(resource);
+    }
+
 
 
 
