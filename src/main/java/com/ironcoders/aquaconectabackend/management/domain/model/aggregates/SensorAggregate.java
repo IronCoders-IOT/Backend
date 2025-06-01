@@ -22,11 +22,11 @@ public class SensorAggregate extends AuditableAbstractAggregateRoot<SensorAggreg
     private Long residentId;
 
     public SensorAggregate() {}
-    public SensorAggregate(String type, String status, String description, Long residenId){
+    public SensorAggregate(String type, String status, String description, Long residentId){
         this.type = type;
         this.status = status;
         this.description = description;
-        this.residentId = residenId;
+        this.residentId = residentId;
 
     }
 
