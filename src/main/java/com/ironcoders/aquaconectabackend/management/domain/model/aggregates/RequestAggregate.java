@@ -38,11 +38,14 @@ public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggr
     }
 
     public RequestAggregate(CreateRequestCommand command) {
-        this.residentId = command.residentId();
-        this.providerId = command.providerId();
         this.title = command.title();
         this.description = command.description();
         this.status = command.status();
+    }
+
+    public RequestAggregate update(String status) {
+        this.status = status;
+        return this;
     }
 
 

@@ -8,10 +8,8 @@ public class CreateRequestCommandFromResourceAssembler {
         return new CreateRequestCommand(
                 resource.title(),
                 resource.description(),
-                resource.status(),
-                resource.residentId(),
-                resource.providerId()
-                
+                resource.status()
+
         );
     }
 

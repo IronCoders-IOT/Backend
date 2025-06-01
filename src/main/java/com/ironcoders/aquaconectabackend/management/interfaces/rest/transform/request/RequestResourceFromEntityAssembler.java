@@ -8,6 +8,7 @@ public class RequestResourceFromEntityAssembler {
         return new RequestResource(
             aggregate.getId(),
             aggregate.getTitle(),
+                aggregate.getDescription(),
                 aggregate.getStatus(),
                 aggregate.getProviderId(),
                 aggregate.getProviderId()
