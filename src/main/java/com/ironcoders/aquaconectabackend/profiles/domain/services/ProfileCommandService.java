@@ -11,4 +11,5 @@ public interface ProfileCommandService {
     Optional<Profile> handle(CreateProfileCommand command);
     Optional<Profile> handle(UpdateProfileCommand command);
 
+    void handle(Long userId, CreateProfileCommand command);
 }

@@ -1,6 +1,8 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.comandservices;
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.valueobjects.PersonName;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
@@ -29,15 +31,27 @@ public class ProviderCommandServiceImpl implements ProviderCommandService {
     public Optional<Provider> handle(CreateProviderCommand command) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
 
-        if (!profileRepository.findById(userDetails.getId()).isPresent()) {
-            throw new IllegalArgumentException("No se encontró un perfil para este usuario");
+        // Crear perfil si no existe
+        if (profileRepository.findById(userId).isEmpty()) {
+            PersonName name = new PersonName(command.firstName(), command.lastName());
+            Profile profile = new Profile(
+                    name,
+                    command.email(),
+                    command.direction(),
+                    command.documentNumber(),
+                    command.documentType(),
+                    userId,
+                    command.phone()
+            );
+            profileRepository.save(profile);
         }
 
-
-
-        var provider = new Provider(command, userDetails.getId());
+        // Crear proveedor
+        Provider provider = new Provider(command, userId);
         providerRepository.save(provider);
+
         return Optional.of(provider);
     }
 

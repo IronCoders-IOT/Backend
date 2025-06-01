@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ProviderQueryService {
     Optional<Provider> handle(GetProviderByUserIdQuery query);
 
+    Optional<Provider> findByUserId(long userId);
 }
