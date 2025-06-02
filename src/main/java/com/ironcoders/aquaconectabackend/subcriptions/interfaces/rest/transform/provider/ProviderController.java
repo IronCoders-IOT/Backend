@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/api/v1/providers", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Providers", description = "Provider Management Endpoints")
+@PreAuthorize("isAuthenticated()")
 public class ProviderController {
     private final ProviderCommandService providerCommandService;
     private final ProviderQueryService providerQueryService;
@@ -38,6 +40,7 @@ public class ProviderController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> createProfile(@RequestBody CreateProviderResource resource) {
         CreateProviderCommand createProviderCommand = CreateProviderCommandFromResourceAssembler.toCommandFromResource(resource);
 
@@ -60,6 +63,7 @@ public class ProviderController {
 
 
     @PutMapping("/edit")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> updateProvider(@RequestBody UpdateProviderResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -85,6 +89,7 @@ public class ProviderController {
     }
 
     @GetMapping(value = "/{providerId}/detail")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
         // Obtener el proveedor
         var query = new GetProviderByUserIdQuery(providerId);
@@ -107,6 +112,7 @@ public class ProviderController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProviderResource> getMyProviderDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();

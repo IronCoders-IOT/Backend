@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/api/v1/residents", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Residents", description = "Resident Management Endpoints")
+@PreAuthorize("isAuthenticated()")
 public class ResidentController {
 
     private final ResidentCommandService residentCommandService;
@@ -51,6 +53,7 @@ public class ResidentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
         // Convertimos el recurso a comando
         CreateResidentCommand command = CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -70,6 +73,7 @@ public class ResidentController {
 
 
     @GetMapping("/by-provider/{providerId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable Long providerId) {
         var query = new GetResidentsByProviderIdQuery(providerId);
         var residents = residentQueryService.handle(query);
@@ -86,6 +90,7 @@ public class ResidentController {
 
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ResidentResource>> getResidentsForAuthenticatedProvider() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -114,6 +119,7 @@ public class ResidentController {
 
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> getAuthenticatedResident() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -147,6 +153,7 @@ public class ResidentController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ResidentResource>> getResidentsByUserId(@RequestParam Long userId) {
         var query = new GetResidentByUserIdQuery(userId);
         var residents = residentQueryService.handle(query);
@@ -164,6 +171,7 @@ public class ResidentController {
 
 
     @PutMapping("/me/edit")
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> updateResident(@RequestBody UpdateResidentResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
