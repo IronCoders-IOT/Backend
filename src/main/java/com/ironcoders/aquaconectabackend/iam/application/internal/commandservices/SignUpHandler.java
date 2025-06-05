@@ -35,9 +35,19 @@ public class SignUpHandler {
         List<Role> roles;
 
 
-        var providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
-                .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
-        roles = List.of(providerRole);
+        // Si el rol recibido contiene "ROLE_RESIDENT", úsalo
+        if (command.roles() != null && command.roles().contains("ROLE_RESIDENT")) {
+            Role residentRole = roleRepository.findByName(Roles.ROLE_RESIDENT)
+                    .orElseThrow(() -> new RuntimeException("Rol ROLE_RESIDENT no encontrado"));
+            roles = List.of(residentRole);
+        } else {
+            // Por defecto: ROLE_PROVIDER
+            Role providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
+                    .orElseThrow(() -> new RuntimeException("Rol ROLE_PROVIDER no encontrado"));
+            roles = List.of(providerRole);
+        }
+
+
 
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         userRepository.save(user);

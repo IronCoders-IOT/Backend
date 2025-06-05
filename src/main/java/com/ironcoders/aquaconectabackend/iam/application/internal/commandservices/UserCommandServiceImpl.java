@@ -37,18 +37,28 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Override
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
-            return Optional.empty(); // El nombre de usuario ya existe
+            return Optional.empty();
 
-        // Forzar siempre ROLE_PROVIDER sin importar el contenido de command.roles()
-        var providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
-                .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
+        List<Role> roles;
 
-        var roles = List.of(providerRole);
+        // Si el rol recibido contiene "ROLE_RESIDENT", úsalo
+        if (command.roles() != null && command.roles().contains("ROLE_RESIDENT")) {
+            Role residentRole = roleRepository.findByName(Roles.ROLE_RESIDENT)
+                    .orElseThrow(() -> new RuntimeException("Rol ROLE_RESIDENT no encontrado"));
+            roles = List.of(residentRole);
+        } else {
+            // Por defecto: ROLE_PROVIDER
+            Role providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
+                    .orElseThrow(() -> new RuntimeException("Rol ROLE_PROVIDER no encontrado"));
+            roles = List.of(providerRole);
+        }
 
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         userRepository.save(user);
-        return userRepository.findByUsername(command.username());
+
+        return Optional.of(user);
     }
+
 
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {

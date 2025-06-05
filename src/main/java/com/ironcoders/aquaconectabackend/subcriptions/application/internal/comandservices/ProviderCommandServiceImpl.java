@@ -34,7 +34,7 @@ public class ProviderCommandServiceImpl implements ProviderCommandService {
         Long userId = userDetails.getId();
 
         // Crear perfil si no existe
-        if (profileRepository.findById(userId).isEmpty()) {
+        if (profileRepository.findByUserId(userId).isEmpty()) {
             PersonName name = new PersonName(command.firstName(), command.lastName());
             Profile profile = new Profile(
                     name,
