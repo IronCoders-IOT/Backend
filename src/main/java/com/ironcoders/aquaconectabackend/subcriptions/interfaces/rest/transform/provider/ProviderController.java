@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -38,29 +39,40 @@ public class ProviderController {
         this.providerQueryService = providerQueryService;
         this.profileRepository = profileRepository;
     }
-
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ProviderResource> createProfile(@RequestBody CreateProviderResource resource) {
-        CreateProviderCommand createProviderCommand = CreateProviderCommandFromResourceAssembler.toCommandFromResource(resource);
+    public ResponseEntity<?> createProfile(@RequestBody CreateProviderResource resource) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
+
+        // ✅ Validar si ya existe un perfil para el usuario autenticado
+        List<Profile> profiles = profileRepository.findByUserId(userId);
+        if (!profiles.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ya existe un perfil asociado a esta cuenta.");
+        }
+
+        // Crear proveedor
+        CreateProviderCommand createProviderCommand = CreateProviderCommandFromResourceAssembler.toCommandFromResource(resource);
         var providerOptional = providerCommandService.handle(createProviderCommand);
+
         if (providerOptional.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error al crear proveedor.");
         }
 
         var provider = providerOptional.get();
 
-        // Obtener el perfil recién creado
-        var profileOptional = profileRepository.findById(provider.getUserId());
-        if (profileOptional.isEmpty()) {
-            return ResponseEntity.internalServerError().build(); // No debería pasar si todo funcionó bien
+        // Buscar perfil nuevamente después de creación
+        List<Profile> updatedProfiles = profileRepository.findByUserId(userId);
+        if (updatedProfiles.isEmpty()) {
+            return ResponseEntity.internalServerError().body("Perfil no encontrado tras la creación.");
         }
 
-        var providerResource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
+        var providerResource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, updatedProfiles.get(0));
         return new ResponseEntity<>(providerResource, HttpStatus.CREATED);
     }
-
 
     @PutMapping("/edit")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")

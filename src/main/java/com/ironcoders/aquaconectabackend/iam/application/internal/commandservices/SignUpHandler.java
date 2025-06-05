@@ -27,6 +27,7 @@ public class SignUpHandler {
         this.hashingService = hashingService;
     }
 
+
     @Transactional
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
@@ -34,23 +35,19 @@ public class SignUpHandler {
 
         List<Role> roles;
 
-
-        // Si el rol recibido contiene "ROLE_RESIDENT", úsalo
         if (command.roles() != null && command.roles().contains("ROLE_RESIDENT")) {
             Role residentRole = roleRepository.findByName(Roles.ROLE_RESIDENT)
-                    .orElseThrow(() -> new RuntimeException("Rol ROLE_RESIDENT no encontrado"));
+                    .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_RESIDENT)));
             roles = List.of(residentRole);
         } else {
-            // Por defecto: ROLE_PROVIDER
             Role providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
-                    .orElseThrow(() -> new RuntimeException("Rol ROLE_PROVIDER no encontrado"));
+                    .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
             roles = List.of(providerRole);
         }
-
-
 
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         userRepository.save(user);
         return userRepository.findByUsername(command.username());
     }
+
 }
