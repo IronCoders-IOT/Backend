@@ -35,6 +35,7 @@ public class ProviderCommandServiceImpl implements ProviderCommandService {
 
         // Crear perfil si no existe
         if (profileRepository.findById(userId).isEmpty()) {
+            System.out.println("Creando nuevo perfil para el usuario " + userId);
             PersonName name = new PersonName(command.firstName(), command.lastName());
             Profile profile = new Profile(
                     name,
@@ -49,6 +50,8 @@ public class ProviderCommandServiceImpl implements ProviderCommandService {
         }
 
         // Crear proveedor
+        System.out.println("Creando proveedor para el usuario " + userId);
+
         Provider provider = new Provider(command, userId);
         providerRepository.save(provider);
 

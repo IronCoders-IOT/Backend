@@ -108,30 +108,47 @@ public class ProviderController {
 
     @GetMapping("/me")
     public ResponseEntity<ProviderResource> getMyProviderDetails() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("DEBUG: No authentication found");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
 
-        // Obtener el proveedor a partir del userId
-        var query = new GetProviderByUserIdQuery(userId);
-        var providerOptional = providerQueryService.handle(query);
+            if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+                System.out.println("DEBUG: Principal is not UserDetailsImpl");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
 
-        if (providerOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            System.out.println("DEBUG: Current userId: " + userId);
+
+            var query = new GetProviderByUserIdQuery(userId);
+            var providerOptional = providerQueryService.handle(query);
+
+            if (providerOptional.isEmpty()) {
+                System.out.println("DEBUG: No provider found for userId: " + userId);
+                return ResponseEntity.notFound().build();
+            }
+
+            var provider = providerOptional.get();
+            System.out.println("DEBUG: Found provider with ID: " + provider.getId());
+
+            var profileOptional = profileRepository.findByUserId(provider.getUserId()).stream().findFirst();
+            if (profileOptional.isEmpty()) {
+                System.out.println("DEBUG: No profile found for userId: " + provider.getUserId());
+                return ResponseEntity.internalServerError().build();
+            }
+
+            var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
+            return ResponseEntity.ok(resource);
+        } catch (Exception e) {
+            System.out.println("ERROR in getMyProviderDetails: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
-
-        var provider = providerOptional.get();
-
-        // Obtener el perfil asociado
-        var profileOptional = profileRepository.findById(provider.getUserId());
-        if (profileOptional.isEmpty()) {
-            return ResponseEntity.internalServerError().build(); // No debería ocurrir
-        }
-
-        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
-        return ResponseEntity.ok(resource);
     }
-
 
 
 
