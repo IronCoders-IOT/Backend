@@ -33,9 +33,8 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
     }
 
     @Override
-    public Optional<Resident> findByUserId(long userId) {
-        List<Resident> residents = residentRepository.findByUserId(userId);
-        return residents.isEmpty() ? Optional.empty() : Optional.of(residents.get(0));
+    public Optional<Resident> findByUserId(Long userId) {
+        return residentRepository.findById(userId);
     }
 
 }

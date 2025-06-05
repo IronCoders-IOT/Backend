@@ -65,3 +65,85 @@ Thumbs.db
 
 ### Application Specific ###
 /qodo/
+
+### Additional Spring Boot ###
+.spring-boot-devtools.restart.trigger
+.spring-boot-devtools.restart.log
+.spring-boot-devtools.restart.trigger.file
+
+### Database ###
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+
+### Compiled Files ###
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### Test Coverage ###
+/coverage/
+.coverage
+htmlcov/
+
+### Dependencies ###
+/node_modules/
+/bower_components/
+/.gradle/
+/gradle/
+/gradlew
+/gradlew.bat
+
+### Documentation ###
+/docs/
+/api-docs/
+/swagger-ui/
+
+### Backup Files ###
+*.bak
+*.backup
+*_backup
+*.old
+
+### IDE Specific ###
+.project
+.classpath
+.settings/
+.factorypath
+.apt_generated
+.sts4-cache/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+### Application Logs ###
+/logs/
+/application.log
+/spring.log
+/hibernate.log
+/tomcat.log
+
+### Configuration Files ###
+/config/
+/conf/
+*.config
+*.conf
+!application-example.properties
+!application-example.yml
+
+### Cache Directories ###
+.cache/
+.temp/
+tmp/
+temp/
+
+### Build Output ###
+/dist/
+/build/
+/out/
+/bin/

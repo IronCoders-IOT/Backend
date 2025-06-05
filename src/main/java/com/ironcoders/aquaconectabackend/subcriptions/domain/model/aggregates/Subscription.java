@@ -35,12 +35,12 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
         this.sensorId = command.sensorId();
         this.residentId = command.residentId(); // Corrige esto, antes tenías: this.residentId = this.residentId
     }
-    public Subscription(Long residentId) {
+    public Subscription(Long residentId, Long sensorId) {
         this.residentId = residentId;
         this.startDate = LocalDate.now();
         this.endDate = this.startDate.plusMonths(1);
         this.status = "ACTIVE";
-        this.sensorId = 0L; // o algún valor por defecto si no se asigna aún
+        this.sensorId = sensorId;
     }
 
     public Subscription(UpdateSubscriptionCommand command) {
@@ -48,6 +48,13 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
         this.startDate = LocalDate.now();
         this.endDate = this.startDate.plusMonths(1);
         this.status = "ACTIVE";
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
 

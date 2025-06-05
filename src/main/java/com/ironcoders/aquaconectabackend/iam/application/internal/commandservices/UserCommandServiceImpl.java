@@ -6,13 +6,17 @@ import com.ironcoders.aquaconectabackend.iam.application.internal.outboundservic
 import com.ironcoders.aquaconectabackend.iam.domain.model.aggregates.User;
 import com.ironcoders.aquaconectabackend.iam.domain.model.commands.SignInCommand;
 import com.ironcoders.aquaconectabackend.iam.domain.model.commands.SignUpCommand;
+import com.ironcoders.aquaconectabackend.iam.domain.model.entities.Role;
 import com.ironcoders.aquaconectabackend.iam.domain.model.valueobjects.Roles;
 import com.ironcoders.aquaconectabackend.iam.domain.services.UserCommandService;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,21 +32,18 @@ public class UserCommandServiceImpl implements UserCommandService {
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
     }
+
+
     @Override
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
-            return Optional.empty(); // Devuelve un Optional vacío si el nombre de usuario ya existe
+            return Optional.empty(); // El nombre de usuario ya existe
 
-        var roles = command.roles();
-        if (roles.isEmpty()) {
-            var role = roleRepository.findByName(Roles.ROLE_PROVIDER);
-            if (role.isPresent()) roles.add(role.get());
-        } else {
-            roles = roles.stream().map(role -> {
-                var existingRole = roleRepository.findByName(role.getName());
-                return existingRole.orElseGet(() -> roleRepository.save(role)); // Crea el rol si no existe
-            }).toList();
-        }
+        // Forzar siempre ROLE_PROVIDER sin importar el contenido de command.roles()
+        var providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
+                .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
+
+        var roles = List.of(providerRole);
 
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         userRepository.save(user);
