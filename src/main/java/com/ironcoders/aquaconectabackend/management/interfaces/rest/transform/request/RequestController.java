@@ -13,6 +13,7 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.re
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/requests")
 @Tag(name = "Requests", description = "Request Management endpoints")
+@PreAuthorize("isAuthenticated()")
 public class RequestController {
 
     private final RequestCommandService requestCommandService;
@@ -35,6 +37,7 @@ public class RequestController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<RequestResource> createRequest(@RequestBody CreateRequestResource resource) throws AccessDeniedException {
         CreateRequestCommand createRequestCommand = CreateRequestCommandFromResourceAssembler.toCommandFromResource(resource);
         var request = requestCommandService.handle(createRequestCommand);
@@ -45,6 +48,7 @@ public class RequestController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<RequestResource> updateRequest(
             @PathVariable Long id,
             @RequestBody UpdateRequestResource resource) throws AccessDeniedException {
@@ -62,6 +66,7 @@ public class RequestController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<RequestResource> getRequestById(@PathVariable Long id) {
         return requestQueryService.handle(new GetRequestByIdQuery(id))
                 .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
@@ -70,6 +75,7 @@ public class RequestController {
     }
 
     @GetMapping("/resident/{residentId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<RequestResource>> getRequestsByResident(@PathVariable Long residentId) {
         var requests = requestQueryService.handle(new GetAllRequestsByResidentIdQuery(residentId));
         var resources = requests.stream()
@@ -79,6 +85,7 @@ public class RequestController {
     }
 
     @GetMapping("/provider/{providerId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<List<RequestResource>> getRequestsByProvider(@PathVariable Long providerId) {
         var requests = requestQueryService.handle(new GetAllRequestsByProviderIdQuery(providerId));
         var resources = requests.stream()

@@ -8,6 +8,7 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.ev
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/events")
 @Tag(name="Events", description = "Event Management endpoints")
+@PreAuthorize("isAuthenticated()")
 public class EventController {
 
     private final EventCommandService eventCommandService;
@@ -27,6 +29,7 @@ public class EventController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<EventResource> createEvent(@RequestBody CreateEventResource resource){
 
         CreateEventCommand createEventCommand = CreateEventCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -38,6 +41,7 @@ public class EventController {
     }
 
     @GetMapping("/sensor/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
         var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
         var resources = events.stream()

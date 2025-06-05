@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/v1/water-request", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "water-requests", description = "Request Management endpoints")
-
+@PreAuthorize("isAuthenticated()")
 public class WaterRequestController {
 
     private final WaterRequestCommandService waterRequestCommandService;
@@ -38,6 +39,7 @@ public class WaterRequestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public List<WaterRequestResource> getAllWaterRequests() {
         return waterRequestQueryService.handle(new GetAllWaterRequestsQuery())
                 .stream()
@@ -46,6 +48,7 @@ public class WaterRequestController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<WaterRequestResource> getWaterRequestById(@PathVariable Long id) {
         return waterRequestQueryService.handle(new GetWaterRequestByIdQuery(id))
                 .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
@@ -54,6 +57,7 @@ public class WaterRequestController {
     }
 
     @GetMapping("/resident/{residentId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public List<WaterRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
         return waterRequestQueryService.handle(new GetWaterRequestsByResidentIdQuery(residentId))
                 .stream()
@@ -62,6 +66,7 @@ public class WaterRequestController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<WaterRequestResource> createWaterRequest(@RequestBody CreateWaterRequestResource resource) throws AccessDeniedException {
 
         CreateWaterRequestCommand command = CreateWaterRequestCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -72,6 +77,7 @@ public class WaterRequestController {
 
     }
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<WaterRequestResource> updateWaterRequest(
             @PathVariable Long id,
             @RequestBody UpdateWaterResource resource) throws AccessDeniedException {

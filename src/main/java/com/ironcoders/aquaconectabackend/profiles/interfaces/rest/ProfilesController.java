@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/api/v1/profiles", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Profiles", description = "Profile Management Endpoints")
+@PreAuthorize("isAuthenticated()")
 public class ProfilesController {
     private final ProfileCommandService profileCommandService;
     private final ProfileQueryService profileQueryService;
@@ -38,6 +40,7 @@ public class ProfilesController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource resource) {
         CreateProfileCommand createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(resource);
         var profile = profileCommandService.handle(createProfileCommand);
@@ -47,6 +50,7 @@ public class ProfilesController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> getMyProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -58,6 +62,7 @@ public class ProfilesController {
         return ResponseEntity.ok(profileResource);
     }
     @PutMapping("/me/edit")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> updateProfile(@RequestBody UpdateProfileResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();

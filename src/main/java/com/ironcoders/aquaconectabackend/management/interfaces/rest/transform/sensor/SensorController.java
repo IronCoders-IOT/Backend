@@ -7,6 +7,7 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.se
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +17,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-
 @RequestMapping(value = "/api/v1/sensors", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "sensors", description = "Sensor Management endpoints")
+@PreAuthorize("isAuthenticated()")
 public class SensorController {
 
     private final SensorQueryService sensorQueryService;
@@ -28,6 +29,7 @@ public class SensorController {
     }
 
     @GetMapping("/resident/{residentId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<SensorResource> getSensorByResidentId(@PathVariable Long residentId) {
         return sensorQueryService.handle(new GetSensorByResidentId(residentId))
                 .map(SensorResourceFromEntityAssembler::toResourceFromEntity)
@@ -36,6 +38,7 @@ public class SensorController {
     }
 
     @GetMapping("/resident/{residentId}/all")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public List<SensorResource> getAllSensorsByResidentId(@PathVariable Long residentId) {
         return sensorQueryService.handle(new GetAllSensorsByResidentId(residentId))
                 .stream()
