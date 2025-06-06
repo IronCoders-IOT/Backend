@@ -10,6 +10,7 @@ import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.prov
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.provider.ProviderCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderRepository;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.CreateProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.ProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.UpdateProviderResource;
@@ -33,11 +34,14 @@ public class ProviderController {
     private final ProviderCommandService providerCommandService;
     private final ProviderQueryService providerQueryService;
     private final ProfileRepository profileRepository;
+    private final ProviderRepository providerRepository;
 
-    public ProviderController(ProviderCommandService providerCommandService, ProviderQueryService providerQueryService, ProfileRepository profileRepository) {
+
+    public ProviderController(ProviderCommandService providerCommandService, ProviderQueryService providerQueryService, ProfileRepository profileRepository, ProviderRepository providerRepository) {
         this.providerCommandService = providerCommandService;
         this.providerQueryService = providerQueryService;
         this.profileRepository = profileRepository;
+        this.providerRepository = providerRepository;
     }
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
@@ -91,21 +95,19 @@ public class ProviderController {
         Provider updatedProvider = updatedProviderOptional.get();
 
         // Obtener el perfil actualizado
-        Optional<Profile> profileOptional = profileRepository.findById(userId);
+        List<Profile> profileOptional = profileRepository.findByUserId(userId);
         if (profileOptional.isEmpty()) {
             return ResponseEntity.internalServerError().build(); // No debería pasar
         }
 
-        ProviderResource response = ProviderResourceFromEntityAssembler.toResourceFromEntities(updatedProvider, profileOptional.get());
+        ProviderResource response = ProviderResourceFromEntityAssembler.toResourceFromEntities(updatedProvider, profileOptional.get(0));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/{providerId}/detail")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
-        // Obtener el proveedor
-        var query = new GetProviderByUserIdQuery(providerId);
-        var providerOptional = providerQueryService.handle(query);
+        var providerOptional = providerRepository.findById(providerId); // <- directo por ID
 
         if (providerOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -113,13 +115,12 @@ public class ProviderController {
 
         var provider = providerOptional.get();
 
-        // Obtener el perfil asociado al usuario del proveedor
-        var profileOptional = profileRepository.findById(provider.getUserId());
+        var profileOptional = profileRepository.findByUserId(provider.getUserId());
         if (profileOptional.isEmpty()) {
-            return ResponseEntity.internalServerError().build(); // No debería pasar
+            return ResponseEntity.internalServerError().build();
         }
 
-        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
+        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get(0));
         return ResponseEntity.ok(resource);
     }
 
@@ -141,12 +142,12 @@ public class ProviderController {
         var provider = providerOptional.get();
 
         // Obtener el perfil asociado
-        var profileOptional = profileRepository.findById(provider.getUserId());
+        var profileOptional = profileRepository.findByUserId(provider.getUserId());
         if (profileOptional.isEmpty()) {
             return ResponseEntity.internalServerError().build(); // No debería ocurrir
         }
 
-        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get());
+        var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(provider, profileOptional.get(0));
         return ResponseEntity.ok(resource);
     }
 

@@ -35,11 +35,14 @@ public class SignUpHandler {
 
         List<Role> roles;
 
-        if (command.roles() != null && command.roles().contains("ROLE_RESIDENT")) {
-            Role residentRole = roleRepository.findByName(Roles.ROLE_RESIDENT)
-                    .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_RESIDENT)));
-            roles = List.of(residentRole);
+        if (command.roles() != null && !command.roles().isEmpty()) {
+            // ✅ Asegurar que todos los roles existan (o crearlos si no)
+            roles = command.roles().stream()
+                    .map(role -> roleRepository.findByName(role.getName())
+                            .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
+                    .toList();
         } else {
+            // ⚠️ Si no vienen roles, usar ROLE_PROVIDER por defecto
             Role providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
                     .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
             roles = List.of(providerRole);

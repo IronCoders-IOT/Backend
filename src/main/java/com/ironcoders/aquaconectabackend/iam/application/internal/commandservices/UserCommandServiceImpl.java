@@ -32,8 +32,6 @@ public class UserCommandServiceImpl implements UserCommandService {
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
     }
-
-
     @Override
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
@@ -41,15 +39,16 @@ public class UserCommandServiceImpl implements UserCommandService {
 
         List<Role> roles;
 
-        // Si el rol recibido contiene "ROLE_RESIDENT", úsalo
-        if (command.roles() != null && command.roles().contains("ROLE_RESIDENT")) {
-            Role residentRole = roleRepository.findByName(Roles.ROLE_RESIDENT)
-                    .orElseThrow(() -> new RuntimeException("Rol ROLE_RESIDENT no encontrado"));
-            roles = List.of(residentRole);
+        if (command.roles() != null && !command.roles().isEmpty()) {
+            // 🔒 Verifica que todos los roles existan o créalos si no existen
+            roles = command.roles().stream()
+                    .map(role -> roleRepository.findByName(role.getName())
+                            .orElseGet(() -> roleRepository.save(new Role(role.getName()))))
+                    .toList();
         } else {
-            // Por defecto: ROLE_PROVIDER
+            // ⚠️ Si no se especifica nada, usar ROLE_PROVIDER por defecto
             Role providerRole = roleRepository.findByName(Roles.ROLE_PROVIDER)
-                    .orElseThrow(() -> new RuntimeException("Rol ROLE_PROVIDER no encontrado"));
+                    .orElseGet(() -> roleRepository.save(new Role(Roles.ROLE_PROVIDER)));
             roles = List.of(providerRole);
         }
 
@@ -58,7 +57,6 @@ public class UserCommandServiceImpl implements UserCommandService {
 
         return Optional.of(user);
     }
-
 
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
