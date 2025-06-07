@@ -2,9 +2,9 @@ package com.ironcoders.aquaconectabackend.management.application.internal.querys
 
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.SensorAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllSensorsByResidentId;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.services.SensorQueryService;
-import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.SensorRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,5 +28,11 @@ public class SensorQueryServiceImpl implements SensorQueryService {
     @Override
     public List<SensorAggregate> handle(GetAllSensorsByResidentId query) {
         return sensorRepository.findAllByResidentId(query.residentId());
+    }
+
+
+    @Override
+    public Optional<SensorAggregate>handle(GetSensorByIdQuery query){
+        return sensorRepository.findById(query.sensorId());
     }
 }

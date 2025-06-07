@@ -1,6 +1,7 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.sensor;
 
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllSensorsByResidentId;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.services.SensorQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.sensor.SensorResource;
@@ -28,10 +29,11 @@ public class SensorController {
         this.sensorQueryService = sensorQueryService;
     }
 
-    @GetMapping("/resident/{residentId}")
+
+    @GetMapping("/{sensorId}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<SensorResource> getSensorByResidentId(@PathVariable Long residentId) {
-        return sensorQueryService.handle(new GetSensorByResidentId(residentId))
+    public ResponseEntity<SensorResource> getSensorByResidentId(@PathVariable Long sensorId) {
+        return sensorQueryService.handle(new GetSensorByIdQuery(sensorId))
                 .map(SensorResourceFromEntityAssembler::toResourceFromEntity)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
