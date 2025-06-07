@@ -29,7 +29,6 @@ public class EventController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<EventResource> createEvent(@RequestBody CreateEventResource resource){
 
         CreateEventCommand createEventCommand = CreateEventCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -41,7 +40,6 @@ public class EventController {
     }
 
     @GetMapping("/sensor/{id}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
         var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
         var resources = events.stream()

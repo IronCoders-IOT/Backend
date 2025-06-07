@@ -126,12 +126,12 @@ public class ResidentController {
         long userId = userDetails.getId();
 
         // Buscar residente por su userId
-        Optional<Resident> residentOptional = residentQueryService.findByUserId(userId);
+        List<Resident> residentOptional = residentQueryService.findByUserId (userId);
         if (residentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Resident resident = residentOptional.get();
+        Resident resident = residentOptional.get(0);
         String username = iamContextFacade.fetchUsernameByUserId(userId);
 
         ResidentResource resource = ResidentResourceFromEntityAssembler

@@ -67,38 +67,43 @@ public class RequestCommandServiceImpl implements RequestCommandService {
 
     @Override
     public Optional<RequestAggregate> handle(UpdateRequestCommand command) throws AccessDeniedException {
+        // 1. Obtener usuario autenticado
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
+        // 2. Verificar que el usuario tenga rol PROVIDER
         boolean isProvider = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"));
         if (!isProvider) {
             throw new AccessDeniedException("Solo los proveedores pueden actualizar solicitudes.");
         }
 
-        Optional<Provider> provider = providerRepository.findById(userId);
-
-        if (provider.isEmpty()) {
-            throw new IllegalArgumentException("Proveedores no encontrado.");
+        // 3. Buscar el proveedor por userId (⚠️ antes usabas findById(userId), lo cual no es correcto)
+        List<Provider> providerOpt = providerRepository.findByUserId(userId);
+        if (providerOpt.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró un proveedor asociado al usuario con ID: " + userId);
         }
+        Provider provider = providerOpt.get(0);
 
+        // 4. Buscar la solicitud
+        RequestAggregate requestAggregate = requestRepository.findById(command.id())
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada con ID: " + command.id()));
 
-
-        RequestAggregate requestAggregate =  requestRepository.findById(command.id())
-                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada."));
-
-        // Validar que el proveedor tenga permiso sobre esta solicitud
-        if (!requestAggregate.getProviderId().equals(provider.get().getId())) {
+        // 5. Verificar que la solicitud pertenezca a este proveedor
+        if (!requestAggregate.getProviderId().equals(provider.getId())) {
             throw new AccessDeniedException("No tienes permiso para actualizar esta solicitud.");
         }
 
+        // 6. Actualizar el estado de la solicitud
         requestAggregate.update(command.status());
 
+        // 7. Guardar cambios
         requestRepository.save(requestAggregate);
+
         return Optional.of(requestAggregate);
     }
 
 
-        
+
 }
