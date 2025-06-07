@@ -26,14 +26,27 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
         this.sensorRepository = sensorRepository;
     }
 
-
     @Override
     public Optional<Subscription> handle(CreateSubscriptionCommand command) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        var subscription = new Subscription(command);
+        Long residentId = command.residentId();
+
+        // 1. Crear el sensor automáticamente
+        SensorAggregate sensor = new SensorAggregate(
+                "ULTRASONICO",
+                "ACTIVO",
+                "Sensor automático creado con la suscripción",
+                residentId
+        );
+        sensorRepository.save(sensor); // se genera su ID (asumiendo que es autogenerado)
+
+        // 2. Crear la suscripción y asociarle el sensor
+        Subscription subscription = new Subscription(command);
+
         subscriptionRepository.save(subscription);
+
         return Optional.of(subscription);
     }
 

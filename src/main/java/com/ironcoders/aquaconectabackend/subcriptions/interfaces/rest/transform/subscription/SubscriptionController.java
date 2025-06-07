@@ -58,13 +58,18 @@ public class SubscriptionController {
 
     @GetMapping("/resident/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<SubscriptionResource> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
+    public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
 
         var query = new GetAllSubscriptionsByResidentId(id);
         var subscriptions = subscriptionQueryService.handle(query);
-        if (subscriptions.isEmpty())return ResponseEntity.notFound().build();
-        var subscriptionResource = SubscriptionResourceFromEntityAssembler.toResourceFromEntity(subscriptions.get(0));
-        return new ResponseEntity<>(subscriptionResource, HttpStatus.OK);
+
+        if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
+
+        var subscriptionResources = subscriptions.stream()
+                .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+
+        return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
     }
 
     @GetMapping("")
@@ -72,14 +77,18 @@ public class SubscriptionController {
     public ResponseEntity<List<SubscriptionResource>> getSubscriptions() throws AccessDeniedException {
         var query = new GetAllSubscriptions();
         var subscriptions = subscriptionQueryService.handle(query);
-        if (subscriptions.isEmpty()) return ResponseEntity.noContent().build();
 
-        var resources = subscriptions.stream()
+        if (subscriptions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        var subscriptionResources = subscriptions.stream()
                 .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
 
-        return ResponseEntity.ok(resources);
+        return ResponseEntity.ok(subscriptionResources);
     }
+
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")

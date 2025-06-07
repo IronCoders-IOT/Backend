@@ -68,41 +68,44 @@ public class WaterRequestCommandServiceImpl implements WaterRequestCommandServic
 
     @Override
     public Optional<WaterRequestAggregate> handle(UpdateWaterRequestCommand command) throws AccessDeniedException {
+        // 1. Obtener el usuario autenticado
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
+        // 2. Verificar que tenga el rol de proveedor
         boolean isProvider = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"));
         if (!isProvider) {
             throw new AccessDeniedException("Solo los proveedores pueden actualizar solicitudes.");
         }
 
-      Optional<Provider> provider = providerRepository.findById(userId);
+        // 3. Buscar proveedor por userId
+        List<Provider> providerOpt = providerRepository.findByUserId(userId);
 
-        if (provider.isEmpty()) {
-            throw new IllegalArgumentException("Proveedores no encontrado.");
+        if (providerOpt.isEmpty()) {
+            throw new IllegalArgumentException("Proveedor no encontrado.");
         }
 
+        Provider provider = providerOpt.get(0);
 
-        // Buscar la solicitud de agua
+        // 4. Buscar la solicitud de agua
         WaterRequestAggregate waterRequest = waterRequestRepository.findById(command.id())
                 .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada."));
 
-        // Validar que el proveedor tenga permiso sobre esta solicitud
-        if (!waterRequest.getProviderId().equals(provider.get().getId())) {
+        // 5. Verificar que la solicitud pertenezca a este proveedor
+        if (!waterRequest.getProviderId().equals(provider.getId())) {
             throw new AccessDeniedException("No tienes permiso para actualizar esta solicitud.");
         }
 
-        // Actualizar estado y fecha de entrega
+        // 6. Actualizar estado y fecha de entrega
         waterRequest.update(command.status(), command.deliveredAt());
 
-        // Guardar cambios
+        // 7. Guardar cambios
         waterRequestRepository.save(waterRequest);
 
         return Optional.of(waterRequest);
     }
-
 
 
 }
