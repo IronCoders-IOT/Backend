@@ -9,6 +9,7 @@ public class RequestResourceFromEntityAssembler {
             aggregate.getId(),
             aggregate.getTitle(),
                 aggregate.getDescription(),
+                aggregate.getEmissionDate(),
                 aggregate.getStatus(),
                 aggregate.getProviderId(),
                 aggregate.getProviderId()

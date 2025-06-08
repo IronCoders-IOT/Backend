@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggregate> {
@@ -23,7 +25,11 @@ public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggr
     
     @Column(nullable = false)
     private String description;
-    
+
+    @Column(nullable = false)
+    private String emissionDate;
+
+
     @Column(nullable = false)
     private String status;
 
@@ -35,6 +41,7 @@ public class RequestAggregate extends AuditableAbstractAggregateRoot<RequestAggr
         this.title = title;
         this.description = description;
         this.status = status;
+        this.emissionDate= LocalDateTime.now().toString();
     }
 
     public RequestAggregate(CreateRequestCommand command) {
