@@ -11,7 +11,7 @@ public class RequestResourceFromEntityAssembler {
                 aggregate.getDescription(),
                 aggregate.getEmissionDate(),
                 aggregate.getStatus(),
-                aggregate.getProviderId(),
+                aggregate.getResidentId(),
                 aggregate.getProviderId()
         );
     }
