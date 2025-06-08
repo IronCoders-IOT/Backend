@@ -6,6 +6,7 @@ public record ResidentResource(
         String lastName,
         String phone,
         String address,
+        String documentNumber,
         Long providerId,
         Long userId,
         String username,

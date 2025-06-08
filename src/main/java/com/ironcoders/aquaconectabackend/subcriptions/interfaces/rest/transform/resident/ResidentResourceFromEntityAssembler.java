@@ -17,6 +17,7 @@ public class ResidentResourceFromEntityAssembler {
                 entity.getLastName(),
                 profile.getPhone(),
                 profile.getDirection(),
+                profile.getDocumentNumber(),
                 entity.getProviderId(),
                 entity.getUserId(),
                 null,     // username vacío
@@ -37,6 +38,7 @@ public class ResidentResourceFromEntityAssembler {
                 entity.getLastName(),
                 profile.getPhone(),
                 profile.getDirection(),
+                profile.getDocumentNumber(),
                 entity.getProviderId(),
                 entity.getUserId(),
                 username,
