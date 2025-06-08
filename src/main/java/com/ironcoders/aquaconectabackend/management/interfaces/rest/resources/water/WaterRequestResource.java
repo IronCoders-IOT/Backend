@@ -8,6 +8,7 @@ public record WaterRequestResource(
         Long residentId,
         Long providerId,
         String requestedLiters,
+        String emissionDate,
         String status,
         LocalDateTime deliveredAt
 ) {}

@@ -20,6 +20,9 @@ public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterR
     private String requestedLiters;
 
     @Column(nullable = false)
+    private String emissionDate;
+
+    @Column(nullable = false)
     private String status;
 
     @Column(nullable = true)
@@ -31,6 +34,8 @@ public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterR
         this.requestedLiters = requestedLiters;
         this.status = status;
         this.deliveredAt = null;
+        this.emissionDate= LocalDateTime.now().toString();
+
     }
 
     public WaterRequestAggregate(CreateWaterRequestCommand command) {
@@ -39,6 +44,7 @@ public class WaterRequestAggregate extends AuditableAbstractAggregateRoot<WaterR
         this.requestedLiters = command.requestedLiters();
         this.status = command.status();
         this.deliveredAt = command.deliveredAt();
+        this.emissionDate= LocalDateTime.now().toString();
     }
 
     public WaterRequestAggregate update(String status, LocalDateTime deliveredAt) {

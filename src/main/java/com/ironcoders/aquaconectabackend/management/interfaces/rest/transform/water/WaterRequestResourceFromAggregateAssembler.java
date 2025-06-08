@@ -10,6 +10,7 @@ public class WaterRequestResourceFromAggregateAssembler {
                 aggregate.getResidentId(),
                 aggregate.getProviderId(),
                 aggregate.getRequestedLiters(),
+                aggregate.getEmissionDate(),
                 aggregate.getStatus(),
                 aggregate.getDeliveredAt()
         );
