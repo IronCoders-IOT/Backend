@@ -109,7 +109,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         );
 
         // 6. Crear y guardar el residente
-        Resident resident = new Resident(command, newUserId, providerId);
+        Resident resident = new Resident(command, newUserId, provider.getId());
         residentRepository.save(resident);
 
         // 7. Crear suscripción automáticamente
