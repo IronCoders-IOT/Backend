@@ -2,6 +2,8 @@ package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
+import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.ResidentWithCredentials;
@@ -40,16 +42,16 @@ public class ResidentController {
     private final ResidentQueryService residentQueryService;
     IamContextFacade iamContextFacade;
     private final ProviderQueryService providerQueryService;
-    //private final ResidentQueryService residentQueryService;
+    private final ProfileRepository profileRepository;
 
-
-    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade, ProviderQueryService providerQueryService) {
+    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade, ProviderQueryService providerQueryService, ProfileRepository profileRepository) {
         this.residentCommandService = residentCommandService;
        // this.residentQueryService = residentQueryService;
         this.residentQueryService = residentQueryService;
         this.iamContextFacade = iamContextFacade;
 
         this.providerQueryService = providerQueryService;
+        this.profileRepository = profileRepository;
     }
 
     @PostMapping
@@ -61,11 +63,14 @@ public class ResidentController {
         // Ejecutamos el caso de uso
         ResidentWithCredentials result = residentCommandService.handle(command);
 
+        List<Profile> profiles = profileRepository.findByUserId(result.resident().getUserId());
+
         // Convertimos a recurso incluyendo username y password generados
         ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(
                 result.resident(),
                 result.username(),
-                result.password()
+                result.password(),
+                profiles.get(0)
         );
 
         return new ResponseEntity<>(residentResource, HttpStatus.CREATED);
@@ -80,8 +85,11 @@ public class ResidentController {
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
 
         var residentResources = residents.stream().map(resident -> {
+
+
+            List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
             String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username,null, profiles.get(0));
         }).toList();
 
         return ResponseEntity.ok(residentResources);
@@ -110,8 +118,10 @@ public class ResidentController {
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
 
         var residentResources = residents.stream().map(resident -> {
+
+            List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
             String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
         }).toList();
 
         return ResponseEntity.ok(residentResources);
@@ -133,9 +143,10 @@ public class ResidentController {
 
         Resident resident = residentOptional.get(0);
         String username = iamContextFacade.fetchUsernameByUserId(userId);
+        List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
 
         ResidentResource resource = ResidentResourceFromEntityAssembler
-                .toResourceFromEntityWithCredentials(resident, username, null);
+                .toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
 
         return ResponseEntity.ok(resource);
     }
@@ -162,7 +173,8 @@ public class ResidentController {
         // Obtener username para cada userId del residente
         var residentResources = residents.stream().map(resident -> {
             String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null);
+            List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
+            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
         }).toList();
 
         return ResponseEntity.ok(residentResources);
@@ -181,10 +193,12 @@ public class ResidentController {
         UpdateResidentCommand updateResidentCommand = UpdateResidentCommandFromResource.toCommandFromResource(resource);
 
         Optional<Resident> updatedResidentOptional = residentCommandService.handle(updateResidentCommand);
+        List<Profile> profiles = profileRepository.findByUserId(updatedResidentOptional.get().getUserId());
 
         return updatedResidentOptional
                 .filter(updatedResident -> updatedResident.getUserId() == userId) // validación opcional
-                .map(updatedResident -> ResponseEntity.ok(ResidentResourceFromEntityAssembler.toResourceFromEntity(updatedResident)))
+
+                .map(updatedResident -> ResponseEntity.ok(ResidentResourceFromEntityAssembler.toResourceFromEntity(updatedResident,profiles.get(0))))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

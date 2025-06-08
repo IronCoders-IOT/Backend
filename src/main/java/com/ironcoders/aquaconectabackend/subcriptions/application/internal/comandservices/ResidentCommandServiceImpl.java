@@ -5,6 +5,9 @@ import com.ironcoders.aquaconectabackend.iam.domain.model.valueobjects.Roles;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateProfileCommand;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.valueobjects.PersonName;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProfilesContextFacade.ProfilesContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
@@ -77,6 +80,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         // 1. Crear las credenciales del residente
         String username = command.firstName() + "." + command.lastName();
         String password = command.documentNumber();
+
 
     // 2. Indicar el rol por su nombre (como string)
         List<String> roles = List.of("ROLE_RESIDENT");

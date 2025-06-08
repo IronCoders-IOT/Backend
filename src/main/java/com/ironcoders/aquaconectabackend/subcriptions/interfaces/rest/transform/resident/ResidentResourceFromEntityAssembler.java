@@ -1,6 +1,7 @@
 package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.resident;
 
 
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.ProviderResource;
@@ -9,11 +10,13 @@ import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.
 public class ResidentResourceFromEntityAssembler {
 
     // Caso básico sin credenciales
-    public static ResidentResource toResourceFromEntity(Resident entity) {
+    public static ResidentResource toResourceFromEntity(Resident entity,Profile profile) {
         return new ResidentResource(
                 entity.getId(),
                 entity.getFirstName(),
                 entity.getLastName(),
+                profile.getPhone(),
+                profile.getDirection(),
                 entity.getProviderId(),
                 entity.getUserId(),
                 null,     // username vacío
@@ -25,12 +28,15 @@ public class ResidentResourceFromEntityAssembler {
     public static ResidentResource toResourceFromEntityWithCredentials(
             Resident entity,
             String username,
-            String password
+            String password,
+            Profile profile
     ) {
         return new ResidentResource(
                 entity.getId(),
                 entity.getFirstName(),
                 entity.getLastName(),
+                profile.getPhone(),
+                profile.getDirection(),
                 entity.getProviderId(),
                 entity.getUserId(),
                 username,
