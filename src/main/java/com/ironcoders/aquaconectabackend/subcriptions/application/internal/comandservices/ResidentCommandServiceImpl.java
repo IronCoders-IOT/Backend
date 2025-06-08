@@ -69,10 +69,10 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         }
 
 
-        Long providerId = provider.getId();
+        Long providerId = provider.getUserId();
 
         // 3. Validar que el proveedor tenga perfil (si es necesario)
-        if (!profileRepository.findByUserId(providerId).isEmpty()) {
+        if (profileRepository.findByUserId(providerId).isEmpty()) {
             throw new IllegalArgumentException("No se encontró un perfil para este proveedor");
         }
 
