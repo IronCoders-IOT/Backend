@@ -7,6 +7,7 @@ import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.CreateProviderCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetAllProvidersQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.provider.ProviderCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
@@ -23,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,6 +153,30 @@ public class ProviderController {
         return ResponseEntity.ok(resource);
     }
 
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<ProviderResource>> getAllProviders() {
+        List<Provider> providers = providerQueryService.handle(new GetAllProvidersQuery());
+
+        if (providers.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<ProviderResource> resources = new ArrayList<>();
+
+        for (Provider provider : providers) {
+            var profileOptional = profileRepository.findByUserId(provider.getUserId());
+            if (profileOptional.isEmpty()) {
+                continue; // Podrías loguear esto si es un caso raro
+            }
+            var resource = ProviderResourceFromEntityAssembler.toResourceFromEntities(
+                    provider, profileOptional.get(0)
+            );
+            resources.add(resource);
+        }
+
+        return ResponseEntity.ok(resources);
+    }
 
 
 

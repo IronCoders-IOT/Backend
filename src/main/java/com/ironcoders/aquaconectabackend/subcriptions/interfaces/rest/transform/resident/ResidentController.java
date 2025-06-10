@@ -54,6 +54,7 @@ public class ResidentController {
         this.profileRepository = profileRepository;
     }
 
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
@@ -150,17 +151,6 @@ public class ResidentController {
 
         return ResponseEntity.ok(resource);
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     @GetMapping("/{id}")

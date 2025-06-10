@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.subcriptions.application.internal.quer
 
 
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetAllProvidersQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetProviderByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderRepository;
@@ -37,5 +38,10 @@ public class ProviderQueryServiceImpl implements ProviderQueryService {
         return Optional.of(providers.get(0));
     }
 
+    @Override
+    public List<Provider> handle(GetAllProvidersQuery query) {
+        List<Provider>providers = providerRepository.findAll();
+        return providers;
+    }
 
 }
