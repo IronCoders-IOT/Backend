@@ -1,5 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.application.internal.queryservices;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByResidentIdQuery;
@@ -27,6 +28,11 @@ public class RequestQueryServiceImpl implements RequestQueryService {
     @Override
     public List<RequestAggregate> handle(GetAllRequestsByProviderIdQuery query) {
         return requestRepository.findByProviderId(query.providerId());
+    }
+
+    @Override
+    public List<RequestAggregate> handle(GetAllRequestQuery query) {
+        return requestRepository.findAll();
     }
 
     @Override

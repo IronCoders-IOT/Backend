@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.r
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.RequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateRequestCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetRequestByIdQuery;
@@ -10,6 +11,10 @@ import com.ironcoders.aquaconectabackend.management.domain.services.RequestQuery
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.CreateRequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.RequestResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.request.UpdateRequestResource;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Provider;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetAllProvidersQuery;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.ProviderResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.provider.ProviderResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -93,4 +99,26 @@ public class RequestController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(resources);
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<RequestAggregate>> getAllRequests() {
+        List<RequestAggregate> requests = requestQueryService.handle(new GetAllRequestQuery());
+
+        if (requests.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(requests);
+    }
+
+
+
+
+
+
+
+
+
+
 }
