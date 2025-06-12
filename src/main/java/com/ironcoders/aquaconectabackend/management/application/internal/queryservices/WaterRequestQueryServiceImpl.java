@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.management.application.internal.querys
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterRequestAggregate;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWaterRequestsQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWatterRequestsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestQueryService;
@@ -64,4 +65,9 @@ public class WaterRequestQueryServiceImpl implements WaterRequestQueryService {
     @Override
     public List<WaterRequestAggregate> handle(GetWaterRequestsByResidentIdQuery query) {
         return waterRequestRepository.findByResidentId(query.residentId()); }
+
+    @Override
+    public List<WaterRequestAggregate>handle(GetAllWatterRequestsQuery query){
+        return waterRequestRepository.findAll();
+    }
 }

@@ -4,6 +4,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Wate
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateWaterRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWaterRequestsQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWatterRequestsQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetWaterRequestsByResidentIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.WaterRequestCommandService;
@@ -46,6 +47,16 @@ public class WaterRequestController {
                 .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public List<WaterRequestResource> getAllWaterRequestsByAdmin() {
+        return waterRequestQueryService.handle(new GetAllWatterRequestsQuery())
+                .stream()
+                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+    }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
