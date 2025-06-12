@@ -1,6 +1,7 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.queryservices;
 
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetAllResidentsQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.resident.ResidentQueryService;
@@ -36,4 +37,9 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
         return residentRepository.findByUserId(userId);
     }
 
+
+    @Override
+    public List<Resident> handle(GetAllResidentsQuery query) {
+        return residentRepository.findAll();
+    }
 }

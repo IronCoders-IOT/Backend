@@ -9,16 +9,21 @@ import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Re
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.resident.UpdateResidentCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.provider.GetAllProvidersQuery;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetAllResidentsQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentByUserIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.resident.GetResidentsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.resident.ResidentCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.provider.ProviderQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.resident.ResidentQueryService;
+import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.resident.ResidentRepository;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.ProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.provider.UpdateProviderResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.resident.CreateResidentResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.resident.ResidentResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.resident.UpdateResidentResource;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.provider.CreateProviderCommandFromResourceAssembler;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.provider.ProviderResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,11 +46,12 @@ public class ResidentController {
 
     private final ResidentCommandService residentCommandService;
     private final ResidentQueryService residentQueryService;
+    private final ResidentRepository residentRepository;
     IamContextFacade iamContextFacade;
     private final ProviderQueryService providerQueryService;
     private final ProfileRepository profileRepository;
 
-    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade, ProviderQueryService providerQueryService, ProfileRepository profileRepository) {
+    public ResidentController(ResidentCommandService residentCommandService, /*, ResidentQueryService residentQueryService */ResidentQueryService residentQueryService, IamContextFacade iamContextFacade, ProviderQueryService providerQueryService, ProfileRepository profileRepository, ResidentRepository residentRepository) {
         this.residentCommandService = residentCommandService;
        // this.residentQueryService = residentQueryService;
         this.residentQueryService = residentQueryService;
@@ -52,6 +59,7 @@ public class ResidentController {
 
         this.providerQueryService = providerQueryService;
         this.profileRepository = profileRepository;
+        this.residentRepository = residentRepository;
     }
 
 
@@ -193,6 +201,29 @@ public class ResidentController {
     }
 
 
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<ResidentResource>> getAllResidents() {
+        List<Resident> residents = residentQueryService.handle(new GetAllResidentsQuery());
 
+        if (residents.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<ResidentResource> resources = new ArrayList<>();
+
+        for (Resident resident : residents) {
+            var profileOptional = profileRepository.findByUserId(resident.getUserId());
+            if (profileOptional.isEmpty()) {
+                continue; // Podrías loguear esto si es un caso raro
+            }
+            var resource = ResidentResourceFromEntityAssembler.toResourceFromEntity(
+                    resident, profileOptional.get(0)
+            );
+            resources.add(resource);
+        }
+
+        return ResponseEntity.ok(resources);
+    }
 
 }
