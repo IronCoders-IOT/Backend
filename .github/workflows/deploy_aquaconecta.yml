@@ -24,8 +24,8 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-      - name: Mostrar archivos generados (debug temporal)
-        run: ls -la target
+      - name: List files in target
+        run: ls -l target/
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -47,8 +47,8 @@ jobs:
         with:
           name: java-app
 
-      - name: Mostrar archivos descargados (debug temporal)
-        run: ls -la
+      - name: List downloaded files (debug)
+        run: ls -l
 
       - name: Login to Azure
         uses: azure/login@v2
