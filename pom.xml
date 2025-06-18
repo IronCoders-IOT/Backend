@@ -14,7 +14,7 @@
     <name>learning-center-platform</name>
     <description>learning-center-platform</description>
     <properties>
-        <java.version>22</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
