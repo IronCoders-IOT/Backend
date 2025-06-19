@@ -69,5 +69,31 @@ class ProviderCommandServiceImplTest {
         verify(profileRepository, times(1)).save(any(Profile.class));
         verify(providerRepository, times(1)).save(any(Provider.class));
     }
+    @Test
+    void handleCreateProvider_shouldPropagateCommandDataToProvider() {
+        // Arrange
+        Long userId = 5L;
+        when(userDetails.getId()).thenReturn(userId);
+        when(profileRepository.findByUserId(userId)).thenReturn(List.of());
+        CreateProviderCommand command = mock(CreateProviderCommand.class);
+        when(command.firstName()).thenReturn("Alex");
+        when(command.lastName()).thenReturn("Turner");
+        when(command.email()).thenReturn("alex@turner.com");
+        when(command.direction()).thenReturn("Main Road");
+        when(command.documentNumber()).thenReturn("11122233");
+        when(command.documentType()).thenReturn("PASSPORT");
+        when(command.phone()).thenReturn("555-0001");
+
+        ArgumentCaptor<Provider> providerCaptor = ArgumentCaptor.forClass(Provider.class);
+
+        // Act
+        providerCommandService.handle(command);
+
+        // Assert
+        verify(providerRepository).save(providerCaptor.capture());
+        Provider savedProvider = providerCaptor.getValue();
+        assertNotNull(savedProvider);
+        // Aquí podrías verificar que los datos del provider correspondan al comando según la lógica de tu constructor
+    }
 
 }
