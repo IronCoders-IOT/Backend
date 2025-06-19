@@ -120,5 +120,20 @@ class ProviderCommandServiceImplTest {
         verify(profileRepository, never()).save(any(Profile.class)); // NO debe crear perfil nuevo
         verify(providerRepository, times(1)).save(any(Provider.class));
     }
+    @Test
+    void handleUpdateProvider_whenNoProviderExists_throwsException() {
+        // Arrange
+        Long userId = 4L;
+        when(userDetails.getId()).thenReturn(userId);
+        when(providerRepository.findByUserId(userId)).thenReturn(List.of());
+        var command = mock(com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.provider.UpdateProviderCommand.class);
 
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> providerCommandService.handle(command));
+        verify(providerRepository, never()).save(any());
+    }
+
+
+
+    
 }
