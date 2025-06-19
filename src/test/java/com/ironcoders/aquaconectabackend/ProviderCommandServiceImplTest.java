@@ -95,5 +95,30 @@ class ProviderCommandServiceImplTest {
         assertNotNull(savedProvider);
         // Aquí podrías verificar que los datos del provider correspondan al comando según la lógica de tu constructor
     }
+    @Test
+    void handleCreateProvider_whenProfileExists_doesNotCreateNewProfileButCreatesProvider() {
+        // Arrange
+        Long userId = 2L;
+        when(userDetails.getId()).thenReturn(userId);
+        // Simulamos que YA hay un perfil
+        Profile existingProfile = mock(Profile.class);
+        when(profileRepository.findByUserId(userId)).thenReturn(List.of(existingProfile));
+        CreateProviderCommand command = mock(CreateProviderCommand.class);
+        when(command.firstName()).thenReturn("Jane");
+        when(command.lastName()).thenReturn("Smith");
+        when(command.email()).thenReturn("jane@smith.com");
+        when(command.direction()).thenReturn("Avenue 456");
+        when(command.documentNumber()).thenReturn("87654321");
+        when(command.documentType()).thenReturn("DNI");
+        when(command.phone()).thenReturn("555-5678");
+
+        // Act
+        Optional<Provider> result = providerCommandService.handle(command);
+
+        // Assert
+        assertTrue(result.isPresent());
+        verify(profileRepository, never()).save(any(Profile.class)); // NO debe crear perfil nuevo
+        verify(providerRepository, times(1)).save(any(Provider.class));
+    }
 
 }
