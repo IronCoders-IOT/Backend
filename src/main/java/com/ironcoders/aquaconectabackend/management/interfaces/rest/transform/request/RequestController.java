@@ -80,25 +80,8 @@ public class RequestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/resident/{residentId}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<List<RequestResource>> getRequestsByResident(@PathVariable Long residentId) {
-        var requests = requestQueryService.handle(new GetAllRequestsByResidentIdQuery(residentId));
-        var resources = requests.stream()
-                .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(resources);
-    }
 
-    @GetMapping("/provider/{providerId}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER')")
-    public ResponseEntity<List<RequestResource>> getRequestsByProvider(@PathVariable Long providerId) {
-        var requests = requestQueryService.handle(new GetAllRequestsByProviderIdQuery(providerId));
-        var resources = requests.stream()
-                .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(resources);
-    }
+
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")

@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/api/v1/water-request", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/water-requests", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "water-requests", description = "Request Management endpoints")
 @PreAuthorize("isAuthenticated()")
 public class WaterRequestController {
@@ -48,14 +48,6 @@ public class WaterRequestController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public List<WaterRequestResource> getAllWaterRequestsByAdmin() {
-        return waterRequestQueryService.handle(new GetAllWatterRequestsQuery())
-                .stream()
-                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-    }
 
 
     @GetMapping("/{id}")
@@ -67,14 +59,6 @@ public class WaterRequestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/resident/{residentId}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    public List<WaterRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
-        return waterRequestQueryService.handle(new GetWaterRequestsByResidentIdQuery(residentId))
-                .stream()
-                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-    }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_RESIDENT')")

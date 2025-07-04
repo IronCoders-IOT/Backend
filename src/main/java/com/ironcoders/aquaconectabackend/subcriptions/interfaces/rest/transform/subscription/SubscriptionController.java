@@ -56,21 +56,7 @@ public class SubscriptionController {
         return new ResponseEntity<>(subscriptionResource, HttpStatus.CREATED);
     }
 
-    @GetMapping("/resident/{id}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
 
-        var query = new GetAllSubscriptionsByResidentId(id);
-        var subscriptions = subscriptionQueryService.handle(query);
-
-        if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
-
-        var subscriptionResources = subscriptions.stream()
-                .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
-
-        return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
-    }
 
     @GetMapping("")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")

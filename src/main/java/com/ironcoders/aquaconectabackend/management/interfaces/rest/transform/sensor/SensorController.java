@@ -1,10 +1,14 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.sensor;
 
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllEventsBySensorId;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllSensorsByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetSensorByResidentId;
+import com.ironcoders.aquaconectabackend.management.domain.services.EventQueryService;
 import com.ironcoders.aquaconectabackend.management.domain.services.SensorQueryService;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.event.EventResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.sensor.SensorResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.event.EventResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +28,15 @@ import java.util.stream.Collectors;
 public class SensorController {
 
     private final SensorQueryService sensorQueryService;
+    private final EventQueryService eventQueryService;
 
-    public SensorController(SensorQueryService sensorQueryService) {
+    public SensorController(SensorQueryService sensorQueryService, EventQueryService eventQueryService) {
         this.sensorQueryService = sensorQueryService;
+        this.eventQueryService = eventQueryService;
     }
 
 
-    @GetMapping("/{sensorId}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<SensorResource> getSensorByResidentId(@PathVariable Long sensorId) {
         return sensorQueryService.handle(new GetSensorByIdQuery(sensorId))
@@ -39,12 +45,14 @@ public class SensorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/resident/{residentId}/all")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    public List<SensorResource> getAllSensorsByResidentId(@PathVariable Long residentId) {
-        return sensorQueryService.handle(new GetAllSensorsByResidentId(residentId))
-                .stream()
-                .map(SensorResourceFromEntityAssembler::toResourceFromEntity)
+
+    @GetMapping("/{id}/events")
+    public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
+        var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
+        var resources = events.stream()
+                .map(EventResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
     }
+
 }

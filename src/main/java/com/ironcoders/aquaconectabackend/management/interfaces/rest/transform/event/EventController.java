@@ -39,14 +39,7 @@ public class EventController {
 
     }
 
-    @GetMapping("/sensor/{id}")
-    public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
-        var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
-        var resources = events.stream()
-                .map(EventResourceFromEntityAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(resources);
-    }
+
 }
 
 
