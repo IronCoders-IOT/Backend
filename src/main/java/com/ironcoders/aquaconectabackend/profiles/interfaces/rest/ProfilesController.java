@@ -42,7 +42,15 @@ public class ProfilesController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource resource) {
-        CreateProfileCommand createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(resource);
+        // 1. Obtén el userId del usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        // 2. Pásalo al assembler para crear el comando
+        CreateProfileCommand createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(resource, userId);
+
+        // 3. Llama al servicio como siempre
         var profile = profileCommandService.handle(createProfileCommand);
         if (profile.isEmpty()) return ResponseEntity.badRequest().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
@@ -61,6 +69,7 @@ public class ProfilesController {
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
+   
     @PutMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> updateProfile(@RequestBody UpdateProfileResource resource) {
@@ -68,11 +77,11 @@ public class ProfilesController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
-        UpdateProfileCommand updateProfileCommand = UpdateProfileCommandFromResource.toCommandFromResource(resource);
+        UpdateProfileCommand updateProfileCommand = UpdateProfileCommandFromResource.toCommandFromResource(resource, userId);
+
         Optional<Profile> updatedProfileOptional = profileCommandService.handle(updateProfileCommand);
 
         return updatedProfileOptional
-                .filter(updatedProfile -> updatedProfile.getUserId() == userId)
                 .map(updatedProfile -> ResponseEntity.ok(ProfileResourceFromEntityAssembler.toResourceFromEntity(updatedProfile)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

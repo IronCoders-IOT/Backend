@@ -40,14 +40,14 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
 
     }
 
-    public Profile(CreateProfileCommand command, Long userId) {
+    public Profile(CreateProfileCommand command) {
         this.name = new PersonName(command.firstName(), command.lastName());
         this.email = command.email();
         this.direction = command.direction();
         this.documentNumber = command.documentNumber();
         this.documentType = command.documentType();
         this.phone = command.phone();
-        this.userId = userId;
+        this.userId = command.userId();
     }
 
     public Profile() {}
@@ -57,8 +57,12 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     }
 
     public String getFullName() { return name.getFullName(); }
+   
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public Long getUserId() {
+        return userId;
     }
 
     public String getFirstName() {
@@ -67,6 +71,7 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     public  String getLastName() {
         return name.getLastName();
     }
+   
 
 
     public void update(UpdateProfileCommand command) {

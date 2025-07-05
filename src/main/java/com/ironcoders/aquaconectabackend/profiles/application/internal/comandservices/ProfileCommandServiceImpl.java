@@ -22,13 +22,10 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
         this.profileRepository = profileRepository;
     }
 
-    @Override
+   @Override
     public Optional<Profile> handle(CreateProfileCommand command) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
         // Check if a profile already exists for the user
-        List<Profile> existingProfile = profileRepository.findByUserId(userDetails.getId());
+        List<Profile> existingProfile = profileRepository.findByUserId(command.userId());
         if (!existingProfile.isEmpty()) {
             throw new IllegalArgumentException("A profile already exists for this user");
         }
@@ -44,7 +41,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
             throw new IllegalArgumentException("Document number already exists");
         }
 
-        var profile = new Profile(command, userDetails.getId());
+        var profile = new Profile(command);
 
         profileRepository.save(profile);
 
@@ -52,10 +49,8 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
     }
 
     public Optional<Profile> handle(UpdateProfileCommand command) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        List<Profile> existingProfile = profileRepository.findByUserId(userDetails.getId());
+        // Buscar el perfil por el userId que viene en el comando
+        List<Profile> existingProfile = profileRepository.findByUserId(command.userId());
         if (existingProfile.isEmpty()) {
             throw new IllegalArgumentException("No profile found for this user");
         }
@@ -69,7 +64,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
     @Override
     public void handle(Long userId, CreateProfileCommand command) {
-        // Verifica si ya existe un perfil para el usuario
+        // Check if a profile already exists for the user
         List<Profile> existingProfile = profileRepository.findByUserId(userId);
 
         if( !existingProfile.isEmpty() ) {
