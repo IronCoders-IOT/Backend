@@ -136,6 +136,7 @@ public class ProviderController {
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}/residents")
     public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable("id") Long providerId) {
+     
         var query = new GetResidentsByProviderIdQuery(providerId);
         var residents = residentQueryService.handle(query);
         if (residents.isEmpty()) return ResponseEntity.notFound().build();

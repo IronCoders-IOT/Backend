@@ -43,4 +43,10 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
     public List<Resident> handle(GetAllResidentsQuery query) {
         return residentRepository.findAll();
     }
+
+
+    @Override
+    public Optional<Resident> findById(Long residentId) {
+        return residentRepository.findById(residentId);
+    }
 }

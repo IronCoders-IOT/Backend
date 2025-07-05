@@ -12,6 +12,6 @@ public interface ResidentQueryService{
     Optional<Resident> handle(GetResidentByUserIdQuery query);
     List<Resident> handle(GetResidentsByProviderIdQuery query);
     List<Resident> findByUserId(Long userId);
-
+    Optional<Resident> findById(Long residentId);
     List<Resident> handle(GetAllResidentsQuery query);
 }

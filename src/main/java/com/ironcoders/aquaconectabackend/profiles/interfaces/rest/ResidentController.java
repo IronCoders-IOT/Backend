@@ -4,12 +4,18 @@ package com.ironcoders.aquaconectabackend.profiles.interfaces.rest;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.acl.WaterSupplyRequestContextFacade;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.WaterSupplyRequestResource;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.DTO.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.UpdateResidentCommand;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByUserIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetResidentsByProviderIdQuery;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetWaterRequestsByResidentIdQuery;
+import com.ironcoders.aquaconectabackend.profiles.domain.services.ProfileQueryService;
 import com.ironcoders.aquaconectabackend.profiles.domain.services.ResidentCommandService;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProviderQueryService;
@@ -25,6 +31,8 @@ import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.Upda
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +40,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
@@ -45,9 +54,11 @@ public class ResidentController {
     private final ResidentCommandService residentCommandService;
     private final ResidentQueryService residentQueryService;
     private final ResidentRepository residentRepository;
-    private final ProviderQueryService providerQueryService;
-    private final ProfileRepository profileRepository;
+    private final ProviderQueryService providerQueryService;    
+    private final ProfileQueryService profileQueryService;
+
    IamContextFacade iamContextFacade;
+   WaterSupplyRequestContextFacade waterSupplyRequestContextFacade;
 
     public ResidentController(
             ResidentCommandService residentCommandService,
@@ -55,13 +66,16 @@ public class ResidentController {
             ResidentRepository residentRepository,
             ProviderQueryService providerQueryService,
             ProfileRepository profileRepository,
-            IamContextFacade iamContextFacade) {
+            IamContextFacade iamContextFacade,
+            WaterSupplyRequestContextFacade waterSupplyRequestContextFacade,
+            ProfileQueryService profileQueryService) {
         this.residentCommandService = residentCommandService;
         this.residentQueryService = residentQueryService;
         this.residentRepository = residentRepository;
         this.providerQueryService = providerQueryService;
-        this.profileRepository = profileRepository;
         this.iamContextFacade = iamContextFacade;
+        this.waterSupplyRequestContextFacade = waterSupplyRequestContextFacade;
+        this.profileQueryService = profileQueryService;
     }
 
     @PostMapping
@@ -80,14 +94,14 @@ public class ResidentController {
         ResidentWithCredentials result = residentCommandService.handle(command);
 
         // 3. Find the resident's profile using the userId
-        List<Profile> profiles = profileRepository.findByUserId(result.resident().getUserId());
+        Optional<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(resource.userId()));
 
         // 4. Convert the result to a resource, including generated username and password
         ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(
                 result.resident(),
                 result.username(),
                 result.password(),
-                profiles.get(0)
+                profiles.get()
         );
 
         return new ResponseEntity<>(residentResource, HttpStatus.CREATED);
@@ -129,16 +143,32 @@ public class ResidentController {
     //     return ResponseEntity.ok(resources);
     // }
 
- 
+    
+    @GetMapping("/{residentId}/water-requests")
+    @PreAuthorize("hasRole('ROLE_PROVIDER')")
+    public List<WaterSupplyRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
 
-    // @GetMapping("/{id}/water-requests")
-    // @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    // public List<WaterRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
-    //     return waterRequestQueryService.handle(new GetWaterRequestsByResidentIdQuery(residentId))
-    //             .stream()
-    //             .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
-    //             .collect(Collectors.toList());
-    // }
+        // Si es proveedor
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"))) {
+            Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
+            if (providerOptional.isEmpty()) {
+                // Proveedor no encontrado para este usuario, retorna 404 o lanza excepción
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found");
+            }
+            List<Resident> residents = residentQueryService.handle(new GetResidentsByProviderIdQuery(providerOptional.get().getId()));
+            boolean isResidentValid = residents.stream().anyMatch(resident -> resident.getId().equals(residentId));
+            if (!isResidentValid) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Resident does not belong to this provider");
+            }
+        } 
+        return waterSupplyRequestContextFacade.fetchWaterRequestsByResidentId(residentId)
+                .stream()
+                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+    }
 
 
     @GetMapping
@@ -161,12 +191,17 @@ public class ResidentController {
         var residents = residentQueryService.handle(query);
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
 
-        var residentResources = residents.stream().map(resident -> {
-
-            List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
-            String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-            return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
-        }).toList();
+        List<ResidentResource> residentResources = residents.stream()
+            .map(resident -> {
+                Optional<Profile> profileOptional = profileQueryService.handle(new GetProfileByUserIdQuery(resident.getUserId()));
+                String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
+                // Only map if profile is present, otherwise skip (or handle as needed)
+                return profileOptional
+                    .map(profile -> ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null, profile))
+                    .orElse(null);
+            })
+            .filter(resource -> resource != null)
+            .collect(Collectors.toList());
 
         return ResponseEntity.ok(residentResources);
     }
@@ -196,22 +231,29 @@ public class ResidentController {
     // }
 
 
-    // @GetMapping("/{id}")
-    // @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
-    // public ResponseEntity<List<ResidentResource>> getResidentsByUserId(@RequestParam Long userId) {
-    //     var query = new GetResidentByUserIdQuery(userId);
-    //     var residents = residentQueryService.handle(query);
-    //     if (residents.isEmpty()) return ResponseEntity.notFound().build();
+    @GetMapping("/{residentId}")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<ResidentResource>> getResidentById(@PathVariable Long residentId) {
 
-    //     // Obtener username para cada userId del residente
-    //     var residentResources = residents.stream().map(resident -> {
-    //         String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-    //         List<Profile> profiles = profileRepository.findByUserId(resident.getUserId());
-    //         return ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
-    //     }).toList();
 
-    //     return ResponseEntity.ok(residentResources);
-    // }
+        Optional<Resident> residentOptional = residentQueryService.findById(residentId);
+        if (residentOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resident resident = residentOptional.get();
+        
+        Optional<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(resident.getUserId()));
+        if (profiles.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntity(resident, profiles.get());
+
+        return ResponseEntity.ok(List.of(residentResource));
+
+
+    }
 
 
     @PutMapping("/me")
@@ -230,7 +272,9 @@ public class ResidentController {
         }
 
         Resident updatedResident = updatedResidentOptional.get();
-        List<Profile> profiles = profileRepository.findByUserId(updatedResident.getUserId());
+        List<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(updatedResident.getUserId()))
+                .stream()
+                .collect(Collectors.toList());
 
         ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntity(updatedResident, profiles.get(0));
 
