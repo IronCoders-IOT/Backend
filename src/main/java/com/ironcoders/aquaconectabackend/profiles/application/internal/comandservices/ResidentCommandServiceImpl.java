@@ -22,16 +22,13 @@ import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ResidentRepository;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProfilesContextFacade.ProfilesContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.acl.SubscriptionContextFacade;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.services.subscription.SubscriptionCommandService;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ResidentCommandServiceImpl implements ResidentCommandService {
@@ -42,15 +39,25 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
     private final ProfilesContextFacade profilesContextFacade;
     private final ProviderRepository providerRepository;
     private final DeviceContextFacade deviceContextFacade;
-    private final SubscriptionContextFacade subscriptionContextFacade;
-    public ResidentCommandServiceImpl(ResidentRepository residentRepository, ProfileRepository profileRepository, IamContextFacade iamContextFacade, ProfilesContextFacade profilesContextFacade, ProviderRepository providerRepository, RoleRepository roleRepository, DeviceContextFacade deviceContextFacade, SubscriptionContextFacade subscriptionContextFacade) {
+    private final SubscriptionCommandService subscriptionCommandService;
+
+    public ResidentCommandServiceImpl(
+            ResidentRepository residentRepository,
+            ProfileRepository profileRepository,
+            IamContextFacade iamContextFacade,
+            ProfilesContextFacade profilesContextFacade,
+            ProviderRepository providerRepository,
+            RoleRepository roleRepository,
+            DeviceContextFacade deviceContextFacade,
+            SubscriptionCommandService subscriptionCommandService // Cambiado el tipo aquí
+    ) {
         this.residentRepository = residentRepository;
         this.profileRepository = profileRepository;
         this.iamContextFacade = iamContextFacade;
         this.profilesContextFacade = profilesContextFacade;
         this.providerRepository = providerRepository;
         this.deviceContextFacade = deviceContextFacade;
-        this.subscriptionContextFacade = subscriptionContextFacade;
+        this.subscriptionCommandService = subscriptionCommandService;
     }
 
     @Override
@@ -92,35 +99,33 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
 
         // Crear el dispositivo y obtener el objeto Device
         var createDeviceCommand = new CreateDeviceCommand(
-            "IOT",
-            "ACTIVE",
-            "TDS/HC-SR04",
-            resident.getId()
+                "IOT",
+                "ACTIVE",
+                "TDS/HC-SR04",
+                resident.getId()
         );
         Optional<Device> device = deviceContextFacade.createDevice(createDeviceCommand);
 
         if (device.isPresent()) {
             var createSubscriptionCommand = new CreateSubscriptionCommand(device.get().getId(), resident.getId());
-            subscriptionContextFacade.createSubscription(createSubscriptionCommand);
+            subscriptionCommandService.handle(createSubscriptionCommand); // Llama al service, no al facade
         }
 
         return new ResidentWithCredentials(resident, username, password);
     }
 
-        @Override
-        public Optional<Resident> handle(UpdateResidentCommand command) {
+    @Override
+    public Optional<Resident> handle(UpdateResidentCommand command) {
+        Long userId = command.userId(); // Make sure your command has this method/field
 
-            // Get the userId from the command (adjust as needed)
-            Long userId = command.userId(); // Make sure your command has this method/field
+        List<Resident> existingResident = residentRepository.findByUserId(userId);
+        if (existingResident.isEmpty()) {
+            throw new IllegalArgumentException("No resident found for this user");
+        } 
+        Resident resident = existingResident.get(0);
+        resident.update(command);
+        residentRepository.save(resident);
 
-            List<Resident> existingResident = residentRepository.findByUserId(userId);
-            if (existingResident.isEmpty()) {
-                throw new IllegalArgumentException("No resident found for this user");
-            }
-            Resident resident = existingResident.get(0);
-            resident.update(command);
-            residentRepository.save(resident);
-
-            return Optional.of(resident);
-        }
+        return Optional.of(resident);
+    }
 }

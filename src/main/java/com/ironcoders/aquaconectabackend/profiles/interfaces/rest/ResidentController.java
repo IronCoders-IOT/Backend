@@ -142,7 +142,7 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
     //     return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
     // }
 
-    @GetMapping("/{residentId}/requests")
+    @GetMapping("/{residentId}/issue-reports")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<IssueReport>> getRequestsByResidentId(@PathVariable Long residentId) {
         var requests = issueReportContextFacade.fetchIssueReportsByResidentId(residentId)
@@ -153,7 +153,7 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         return ResponseEntity.ok(requests);
     }
 
-    @GetMapping("/{residentId}/water-requests")
+    @GetMapping("/{residentId}/water-supply-requests")
     @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public List<WaterSupplyRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

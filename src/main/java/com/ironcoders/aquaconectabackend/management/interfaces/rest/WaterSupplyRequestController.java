@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/api/v1/water-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "water-requests", description = "Request Management endpoints")
+@RequestMapping(value = "/api/v1/water-supply-requests", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "water-supply-requests", description = "Request Management endpoints")
 @PreAuthorize("isAuthenticated()")
 public class WaterSupplyRequestController {
 
@@ -70,7 +70,7 @@ public class WaterSupplyRequestController {
                 .collect(Collectors.toList());
     }
 
-
+    
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<WaterSupplyRequestResource> getWaterRequestById(@PathVariable Long id) {

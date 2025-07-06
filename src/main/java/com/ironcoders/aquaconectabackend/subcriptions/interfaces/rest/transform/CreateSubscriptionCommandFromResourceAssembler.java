@@ -1,13 +1,11 @@
 package com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform;
 
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.CreateSubscriptionResource;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateAdditionalSubscriptionCommand;
 
 public class CreateSubscriptionCommandFromResourceAssembler {
 
-    public static CreateSubscriptionCommand toCommandFromResource( CreateSubscriptionResource resource) {
-        return new CreateSubscriptionCommand(
-            resource.sensorId(),
+    public static CreateAdditionalSubscriptionCommand toCommandFromResource( CreateAdditionalSubscriptionCommand resource) {
+        return new CreateAdditionalSubscriptionCommand(
                 resource.residentId()
         );
     }

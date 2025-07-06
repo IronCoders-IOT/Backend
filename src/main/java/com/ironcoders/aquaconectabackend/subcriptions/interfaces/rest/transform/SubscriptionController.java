@@ -4,6 +4,7 @@ import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.mo
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ResidentQueryService;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateAdditionalSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.GetAllSubscriptions;
@@ -46,8 +47,8 @@ public class SubscriptionController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<SubscriptionResource> createSubscription(@RequestBody CreateSubscriptionResource resource) {
-        CreateSubscriptionCommand createSubscriptionCommand= CreateSubscriptionCommandFromResourceAssembler.toCommandFromResource(resource);
+    public ResponseEntity<SubscriptionResource> createSubscription(@RequestBody CreateAdditionalSubscriptionCommand resource) {
+        CreateAdditionalSubscriptionCommand createSubscriptionCommand= CreateSubscriptionCommandFromResourceAssembler.toCommandFromResource(resource);
       
         var subscription= subscriptionCommandService.handle(createSubscriptionCommand);
         if (subscription.isEmpty())return ResponseEntity.badRequest().build();

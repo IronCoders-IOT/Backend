@@ -28,8 +28,8 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api/v1/requests")
-@Tag(name = "Requests", description = "Request Management endpoints")
+@RequestMapping("/api/v1/issue-reports")
+@Tag(name = "Issue Reports", description = "Issue Report Management endpoints")
 @PreAuthorize("isAuthenticated()")
 public class IssueReportController {
 

@@ -1,40 +1,44 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.comandservices;
 
-import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Device;
-import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.DeviceRepository;
+import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateDeviceCommand;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.acl.DeviceContextFacade;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ResidentContextFacade.ResidentContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateAdditionalSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.subscription.SubscriptionCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class SubscriptionCommandServiceImpl implements SubscriptionCommandService
-{
+public class SubscriptionCommandServiceImpl implements SubscriptionCommandService {
 
     private final SubscriptionRepository subscriptionRepository;
-    public SubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository) {
+    private final ResidentContextFacade residentContextFacade;
+    private final DeviceContextFacade deviceContextFacade;
+
+    public SubscriptionCommandServiceImpl(
+            SubscriptionRepository subscriptionRepository,
+            ResidentContextFacade residentContextFacade,
+            DeviceContextFacade deviceContextFacade
+    ) {
         this.subscriptionRepository = subscriptionRepository;
+        this.residentContextFacade = residentContextFacade;
+        this.deviceContextFacade = deviceContextFacade;
     }
 
     @Override
     public Optional<Subscription> handle(CreateSubscriptionCommand command) {
-
         Subscription subscription = new Subscription(command);
-
         subscriptionRepository.save(subscription);
-
         return Optional.of(subscription);
     }
-
-
 
     @Override
     public Optional<Subscription> handle(UpdateSubscriptionCommand command) {
@@ -58,5 +62,33 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
         return Optional.of(subscription);
     }
 
+    @Override
+    public Optional<Subscription> handle(CreateAdditionalSubscriptionCommand command) {
 
+        // Busca la suscripción existente
+        Optional<Resident> resident = residentContextFacade.findById(command.residentId());
+
+        if (resident.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Crear el dispositivo y obtener el objeto Device
+        var createDeviceCommand = new CreateDeviceCommand(
+            "IOT",
+            "ACTIVE",
+            "TDS/HC-SR04",
+            resident.get().getId()
+        );
+        Optional<Device> device = deviceContextFacade.createDevice(createDeviceCommand);
+
+        if (device.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Subscription additionalSubscription = new Subscription( command.residentId(),device.get().getId());
+
+        subscriptionRepository.save(additionalSubscription);
+        return Optional.of(additionalSubscription);
+
+    }
 }

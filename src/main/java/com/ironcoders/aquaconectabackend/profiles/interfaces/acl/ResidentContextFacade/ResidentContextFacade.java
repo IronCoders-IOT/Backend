@@ -52,4 +52,10 @@ public class ResidentContextFacade {
     public List<Resident> findByUserId(Long userId) {
         return residentQueryService.findByUserId(userId);
     }
+
+    public Optional<Resident> findById(Long residentId) {
+        return residentQueryService.findById(residentId);
+    }
+
+
 }
