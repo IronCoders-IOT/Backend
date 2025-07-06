@@ -1,6 +1,7 @@
 package com.ironcoders.aquaconectabackend.management.interfaces.rest;
 
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.WaterSupplyRequest;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateWaterSupplyRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateWaterSupplyRequestCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllWaterSupplyRequestsQuery;
@@ -13,7 +14,10 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.Wa
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.CreateWaterSupplyRequestCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.UpdateWaterSupplyRequestCommandFromResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ResidentContextFacade.ResidentContextFacade;
 
+import io.jsonwebtoken.lang.Collections;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Optional;
@@ -38,30 +42,60 @@ public class WaterSupplyRequestController {
 
     private final WaterSupplyRequestCommandService waterRequestCommandService;
     private final WaterSupplyRequestQueryService waterRequestQueryService;
+    private final ResidentContextFacade residentContextFacade;
 
-    public WaterSupplyRequestController(WaterSupplyRequestCommandService waterRequestCommandService, WaterSupplyRequestQueryService waterRequestQueryService) {
+    public WaterSupplyRequestController(WaterSupplyRequestCommandService waterRequestCommandService, WaterSupplyRequestQueryService waterRequestQueryService, ResidentContextFacade residentContextFacade) {
         this.waterRequestCommandService = waterRequestCommandService;
         this.waterRequestQueryService = waterRequestQueryService;
+        this.residentContextFacade = residentContextFacade;
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_PROVIDER')")
-    public List<WaterSupplyRequestResource> getAllWaterRequests() {
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+    public List<WaterSupplyRequestResource> getAllMyWaterRequests() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
+        if (residentOptional.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Long residentId = residentOptional.get().getId();
+
         return waterRequestQueryService.handle(new GetAllWaterSupplyRequestsQuery())
                 .stream()
+                .filter(request -> request.getResidentId().equals(residentId))
                 .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
     }
 
 
-
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<WaterSupplyRequestResource> getWaterRequestById(@PathVariable Long id) {
-        return waterRequestQueryService.handle(new GetWaterSupplyRequestByIdQuery(id))
-                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        Optional<WaterSupplyRequest> requestOptional = waterRequestQueryService.handle(new GetWaterSupplyRequestByIdQuery(id));
+        if (requestOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        WaterSupplyRequest request = requestOptional.get();
+
+        boolean isResident = authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_RESIDENT"));
+        if (isResident) {
+            Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
+            if (residentOptional.isEmpty() || !residentOptional.get().getId().equals(request.getResidentId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        WaterSupplyRequestResource resource = WaterRequestResourceFromAggregateAssembler.toResourceFromEntity(request);
+        return ResponseEntity.ok(resource);
     }
 
 

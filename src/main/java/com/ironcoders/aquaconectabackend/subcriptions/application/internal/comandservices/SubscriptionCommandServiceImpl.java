@@ -20,52 +20,18 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
 {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final DeviceRepository sensorRepository;
-    public SubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository, DeviceRepository sensorRepository) {
+    public SubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.sensorRepository = sensorRepository;
     }
 
     @Override
     public Optional<Subscription> handle(CreateSubscriptionCommand command) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        Long residentId = command.residentId();
-
-        // 1. Crear el sensor automáticamente
-        Device sensor = new Device(
-                "ULTRASONICO",
-                "ACTIVO",
-                "Sensor automático creado con la suscripción",
-                residentId
-        );
-        sensorRepository.save(sensor); // se genera su ID (asumiendo que es autogenerado)
-
-        // 2. Crear la suscripción y asociarle el sensor
         Subscription subscription = new Subscription(command);
 
         subscriptionRepository.save(subscription);
 
         return Optional.of(subscription);
-    }
-
-
-
-    @Override
-    public void createForResident(Long residentId) {
-        // Crear el sensor asociado por defecto
-        Device sensor = new Device(
-                "ULTRASONICO",
-                "ACTIVO",
-                "Sensor automático creado con la suscripción",
-                residentId
-        );
-        sensorRepository.save(sensor); // se genera su ID (asumiendo que es @GeneratedValue)
-
-        // Crear la suscripción con el ID del sensor generado
-        Subscription subscription = new Subscription(residentId, sensor.getId());
-        subscriptionRepository.save(subscription);
     }
 
 

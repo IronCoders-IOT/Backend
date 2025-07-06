@@ -9,7 +9,6 @@ import java.util.Optional;
 public interface SubscriptionCommandService {
     Optional<Subscription> handle (CreateSubscriptionCommand command);
 
-    void createForResident(Long residentId);
 
     Optional<Subscription>handle(UpdateSubscriptionCommand command);
 }

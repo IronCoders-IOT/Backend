@@ -1,6 +1,6 @@
 package com.ironcoders.aquaconectabackend.management.domain.model.aggregates;
 
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateEventCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateDeviceCommand;
 import com.ironcoders.aquaconectabackend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,6 +27,14 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
         this.status = status;
         this.description = description;
         this.residentId = residentId;
+
+    }
+
+    public Device(CreateDeviceCommand command) {
+        this.type = command.type();
+        this.status = command.status();
+        this.description = command.description();
+        this.residentId = command.residentId();
 
     }
 

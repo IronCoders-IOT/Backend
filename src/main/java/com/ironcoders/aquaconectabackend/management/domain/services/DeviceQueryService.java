@@ -8,7 +8,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetDevi
 import java.util.List;
 import java.util.Optional;
 
-public interface SensorQueryService {
+public interface DeviceQueryService {
 
     Optional<Device> handle(GetDeviceByResidentId query);
     List<Device> handle(GetAllDevicesByResidentId query);

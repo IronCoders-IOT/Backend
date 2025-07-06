@@ -4,7 +4,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Devi
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllDevicesByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetDeviceByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetDeviceByResidentId;
-import com.ironcoders.aquaconectabackend.management.domain.services.SensorQueryService;
+import com.ironcoders.aquaconectabackend.management.domain.services.DeviceQueryService;
 import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.DeviceRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DeviceQueryServiceImpl implements SensorQueryService {
+public class DeviceQueryServiceImpl implements DeviceQueryService {
 
     private final DeviceRepository sensorRepository;
 

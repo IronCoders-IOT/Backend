@@ -5,6 +5,9 @@ import com.ironcoders.aquaconectabackend.iam.domain.model.valueobjects.Roles;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import com.ironcoders.aquaconectabackend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.ironcoders.aquaconectabackend.iam.interfaces.acl.IamContextFacade;
+import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Device;
+import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateDeviceCommand;
+import com.ironcoders.aquaconectabackend.management.interfaces.rest.acl.DeviceContextFacade;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.DTO.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Provider;
@@ -18,6 +21,9 @@ import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProviderRepository;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ResidentRepository;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProfilesContextFacade.ProfilesContextFacade;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.acl.SubscriptionContextFacade;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -35,50 +41,41 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
     private final IamContextFacade iamContextFacade;
     private final ProfilesContextFacade profilesContextFacade;
     private final ProviderRepository providerRepository;
-
-    public ResidentCommandServiceImpl(ResidentRepository residentRepository, ProfileRepository profileRepository, IamContextFacade iamContextFacade, ProfilesContextFacade profilesContextFacade, ProviderRepository providerRepository, RoleRepository roleRepository) {
+    private final DeviceContextFacade deviceContextFacade;
+    private final SubscriptionContextFacade subscriptionContextFacade;
+    public ResidentCommandServiceImpl(ResidentRepository residentRepository, ProfileRepository profileRepository, IamContextFacade iamContextFacade, ProfilesContextFacade profilesContextFacade, ProviderRepository providerRepository, RoleRepository roleRepository, DeviceContextFacade deviceContextFacade, SubscriptionContextFacade subscriptionContextFacade) {
         this.residentRepository = residentRepository;
         this.profileRepository = profileRepository;
         this.iamContextFacade = iamContextFacade;
-
         this.profilesContextFacade = profilesContextFacade;
         this.providerRepository = providerRepository;
+        this.deviceContextFacade = deviceContextFacade;
+        this.subscriptionContextFacade = subscriptionContextFacade;
     }
 
     @Override
     public ResidentWithCredentials handle(CreateResidentCommand command) throws AccessDeniedException {
-        // 1. Get the provider using the providerId from the command
-        Long providerId = command.providerId(); // Adjust if your command class uses a different name
+        Long providerId = command.providerId();
 
-        Provider provider = providerRepository.findByUserId(providerId).get(0);
-        if (provider == null) {
+        List<Provider> providers = providerRepository.findByUserId(providerId);
+        if (providers.isEmpty()) {
             throw new AccessDeniedException("Provider does not exist.");
         }
+        Provider provider = providers.get(0);
 
-        // 2. Validate that the provider has a profile (if necessary)
         if (profileRepository.findByUserId(providerId).isEmpty()) {
             throw new IllegalArgumentException("No profile found for this provider.");
         }
 
-        // 3. Create resident's credentials
         String username = command.firstName() + "." + command.lastName();
         String password = command.documentNumber();
-
-        // 4. Set the resident role
         List<String> roles = List.of("ROLE_RESIDENT");
 
-        // 5. Create the user in IAM
-        Long newUserId = iamContextFacade.createUser(
-                username,
-                password,
-                roles
-        );
-
+        Long newUserId = iamContextFacade.createUser(username, password, roles);
         if (newUserId == 0L) {
             throw new IllegalArgumentException("Could not create resident user.");
         }
 
-        // 6. Create profile for the resident in another bounded context
         profilesContextFacade.createProfileForResident(
                 newUserId,
                 command.firstName(),
@@ -90,9 +87,22 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
                 command.phone()
         );
 
-        // 7. Create and save the resident
         Resident resident = new Resident(command, newUserId, provider.getId());
         residentRepository.save(resident);
+
+        // Crear el dispositivo y obtener el objeto Device
+        var createDeviceCommand = new CreateDeviceCommand(
+            "IOT",
+            "ACTIVE",
+            "TDS/HC-SR04",
+            resident.getId()
+        );
+        Optional<Device> device = deviceContextFacade.createDevice(createDeviceCommand);
+
+        if (device.isPresent()) {
+            var createSubscriptionCommand = new CreateSubscriptionCommand(device.get().getId(), resident.getId());
+            subscriptionContextFacade.createSubscription(createSubscriptionCommand);
+        }
 
         return new ResidentWithCredentials(resident, username, password);
     }

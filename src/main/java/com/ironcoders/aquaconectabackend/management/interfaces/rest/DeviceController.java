@@ -5,7 +5,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllD
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetDeviceByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetDeviceByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.services.EventQueryService;
-import com.ironcoders.aquaconectabackend.management.domain.services.SensorQueryService;
+import com.ironcoders.aquaconectabackend.management.domain.services.DeviceQueryService;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.DeviceResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.EventResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.DeviceResourceFromEntityAssembler;
@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
 @PreAuthorize("isAuthenticated()")
 public class DeviceController {
 
-    private final SensorQueryService sensorQueryService;
+    private final DeviceQueryService sensorQueryService;
     private final EventQueryService eventQueryService;
 
-    public DeviceController(SensorQueryService sensorQueryService, EventQueryService eventQueryService) {
+    public DeviceController(DeviceQueryService sensorQueryService, EventQueryService eventQueryService) {
         this.sensorQueryService = sensorQueryService;
         this.eventQueryService = eventQueryService;
     }

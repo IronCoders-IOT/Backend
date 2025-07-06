@@ -8,6 +8,5 @@ public record CreateResidentResource(
         String direction,
         String documentNumber,
         String documentType,
-        String phone,
-        Long userId
+        String phone
 ) {}

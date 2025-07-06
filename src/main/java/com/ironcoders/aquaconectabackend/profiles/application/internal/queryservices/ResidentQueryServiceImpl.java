@@ -25,7 +25,9 @@ public class ResidentQueryServiceImpl implements ResidentQueryService {
     @Override
     public Optional<Resident> handle(GetResidentByUserIdQuery query) {
 
-       return  residentRepository.findById(query.userId());
+       return  residentRepository.findByUserId(query.userId())
+                .stream()
+                .findFirst();
     }
 
     @Override
