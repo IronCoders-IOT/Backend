@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/v1/devices", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "devices", description = "Device Management endpoints")
+@Tag(name = "Devices", description = "Device Management endpoints")
 @PreAuthorize("isAuthenticated()")
 public class DeviceController {
 
@@ -37,16 +37,13 @@ public class DeviceController {
         this.eventQueryService = eventQueryService;
     }
 
-
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
-    public ResponseEntity<DeviceResource> getSensorByResidentId(@PathVariable Long sensorId) {
-        return deviceQueryService.handle(new GetDeviceByIdQuery(sensorId))
+    public ResponseEntity<DeviceResource> getSensorByResidentId(@PathVariable Long id) {
+        return deviceQueryService.handle(new GetDeviceByIdQuery(id))
                 .map(DeviceResourceFromEntityAssembler::toResourceFromEntity)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
     @GetMapping("/{id}/events")
     public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {

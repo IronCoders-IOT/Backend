@@ -2,6 +2,7 @@ package com.ironcoders.aquaconectabackend.management.interfaces.rest.acl;
 
 import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Device;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateDeviceCommand;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllDevicesByResidentId;
 import com.ironcoders.aquaconectabackend.management.domain.services.DeviceCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.DeviceQueryService;
 
@@ -36,5 +37,9 @@ public class DeviceContextFacade {
      */
     public Optional<Device> createDevice(CreateDeviceCommand command) {
         return deviceCommandService.handle(command);
+    }
+
+    public List<Device> getAllDevicesByResidentId(Long residentId) {
+        return deviceQueryService.handle(new GetAllDevicesByResidentId(residentId));
     }
 }

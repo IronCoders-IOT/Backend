@@ -14,7 +14,9 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.Wa
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.CreateWaterSupplyRequestCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.UpdateWaterSupplyRequestCommandFromResource;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Provider;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProviderContextFacade.ProviderContextFacade;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ResidentContextFacade.ResidentContextFacade;
 
 import io.jsonwebtoken.lang.Collections;
@@ -36,18 +38,20 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/v1/water-supply-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "water-supply-requests", description = "Request Management endpoints")
+@Tag(name = "Water Supply Requests", description = "Water Supply Request Management endpoints")
 @PreAuthorize("isAuthenticated()")
 public class WaterSupplyRequestController {
 
     private final WaterSupplyRequestCommandService waterRequestCommandService;
     private final WaterSupplyRequestQueryService waterRequestQueryService;
     private final ResidentContextFacade residentContextFacade;
+    private final ProviderContextFacade providerContextFacade;
 
-    public WaterSupplyRequestController(WaterSupplyRequestCommandService waterRequestCommandService, WaterSupplyRequestQueryService waterRequestQueryService, ResidentContextFacade residentContextFacade) {
+    public WaterSupplyRequestController(WaterSupplyRequestCommandService waterRequestCommandService, WaterSupplyRequestQueryService waterRequestQueryService, ResidentContextFacade residentContextFacade, ProviderContextFacade providerContextFacade) {
         this.waterRequestCommandService = waterRequestCommandService;
         this.waterRequestQueryService = waterRequestQueryService;
         this.residentContextFacade = residentContextFacade;
+        this.providerContextFacade = providerContextFacade;
     }
 
     @GetMapping("/my")
@@ -70,7 +74,7 @@ public class WaterSupplyRequestController {
                 .collect(Collectors.toList());
     }
 
-    
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<WaterSupplyRequestResource> getWaterRequestById(@PathVariable Long id) {
@@ -90,6 +94,15 @@ public class WaterSupplyRequestController {
         if (isResident) {
             Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
             if (residentOptional.isEmpty() || !residentOptional.get().getId().equals(request.getResidentId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        boolean isProvider = authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"));
+        if (isProvider) {
+            Optional<Provider> providerOptional = providerContextFacade.fetchProviderByUserId(userId);
+            if (providerOptional.isEmpty() || !providerOptional.get().getId().equals(request.getProviderId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
