@@ -18,6 +18,7 @@ import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profil
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.UpdateResidentCommand;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetAllResidentsQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByUserIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetResidentsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetWaterRequestsByResidentIdQuery;
@@ -204,30 +205,38 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
 
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_PROVIDER')")
-    public ResponseEntity<List<ResidentResource>> getResidentsForAuthenticatedProvider() {
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<ResidentResource>> getResidentsForAuthenticatedProviderOrAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
-        // Buscar el proveedor por su userId
-        Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
-        if (providerOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // o 404 si prefieres
+        boolean isAdmin = authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        List<Resident> residents;
+
+        if (isAdmin) {
+            // Si es admin, obtener todos los residentes
+            residents = residentQueryService.handle(new GetAllResidentsQuery());
+        } else {
+            // Buscar el proveedor por su userId
+            Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
+            if (providerOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            Long providerId = providerOptional.get().getId();
+
+            // Consultar residentes del proveedor
+            residents = residentQueryService.handle(new GetResidentsByProviderIdQuery(providerId));
         }
 
-        Long providerId = providerOptional.get().getId();
-
-        // Consultar residentes
-        var query = new GetResidentsByProviderIdQuery(providerId);
-        var residents = residentQueryService.handle(query);
         if (residents.isEmpty()) return ResponseEntity.notFound().build();
 
         List<ResidentResource> residentResources = residents.stream()
             .map(resident -> {
                 Optional<Profile> profileOptional = profileQueryService.handle(new GetProfileByUserIdQuery(resident.getUserId()));
                 String username = iamContextFacade.fetchUsernameByUserId(resident.getUserId());
-                // Only map if profile is present, otherwise skip (or handle as needed)
                 return profileOptional
                     .map(profile -> ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(resident, username, null, profile))
                     .orElse(null);
@@ -237,7 +246,6 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
 
         return ResponseEntity.ok(residentResources);
     }
-
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
