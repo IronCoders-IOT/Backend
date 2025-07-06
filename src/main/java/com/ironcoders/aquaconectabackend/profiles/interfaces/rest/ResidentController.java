@@ -34,6 +34,10 @@ import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.resources.Upda
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.CreateResidentCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.ResidentResourceFromEntityAssembler;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.UpdateResidentCommandFromResource;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.GetAllSubscriptionsByResidentId;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.acl.SubscriptionContextFacade;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.SubscriptionResource;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.transform.SubscriptionResourceFromEntityAssembler;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -68,6 +72,7 @@ public class ResidentController {
    WaterSupplyRequestContextFacade waterSupplyRequestContextFacade;
    IssueReportContextFacade issueReportContextFacade;
    DeviceContextFacade  deviceContextFacade;
+   SubscriptionContextFacade subscriptionContextFacade;
 
     public ResidentController(
             ResidentCommandService residentCommandService,
@@ -79,7 +84,8 @@ public class ResidentController {
             WaterSupplyRequestContextFacade waterSupplyRequestContextFacade,
             ProfileQueryService profileQueryService,
             IssueReportContextFacade issueReportContextFacade,
-            DeviceContextFacade deviceContextFacade
+            DeviceContextFacade deviceContextFacade,
+            SubscriptionContextFacade subscriptionContextFacade
             ) {
         this.residentCommandService = residentCommandService;
         this.residentQueryService = residentQueryService;
@@ -90,6 +96,7 @@ public class ResidentController {
         this.profileQueryService = profileQueryService;
         this.issueReportContextFacade = issueReportContextFacade;
         this.deviceContextFacade = deviceContextFacade;
+        this.subscriptionContextFacade = subscriptionContextFacade;
     }
 
     @PostMapping
@@ -135,21 +142,20 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .collect(Collectors.toList());
     }
 
-    // @GetMapping("/{id}/subscriptions")
-    // @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
-    // public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
+        @GetMapping("/{id}/subscriptions")
+        @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
+        public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
 
-    //     var query = new GetAllSubscriptionsByResidentId(id);
-    //     var subscriptions = subscriptionQueryService.handle(query);
+            var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(id);
 
-    //     if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
+            if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
 
-    //     var subscriptionResources = subscriptions.stream()
-    //             .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
-    //             .toList();
+            var subscriptionResources = subscriptions.stream()
+                    .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
+                    .toList();
 
-    //     return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
-    // }
+            return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
+        }
 
     @GetMapping("/{residentId}/issue-reports")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")

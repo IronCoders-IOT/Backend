@@ -4,6 +4,7 @@ import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Issu
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateIssueReportCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.commads.UpdateIssueReportCommand;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllIssueReportsQuery;
+import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetAllIsueReportsByProviderIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.model.queries.GetIssueReportByIdQuery;
 import com.ironcoders.aquaconectabackend.management.domain.services.IssueReportCommandService;
 import com.ironcoders.aquaconectabackend.management.domain.services.IssueReportQueryService;
@@ -13,6 +14,8 @@ import com.ironcoders.aquaconectabackend.management.interfaces.rest.resources.Up
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.CreateIssueReportCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.IssueReportResourceFromEntityAssembler;
 import com.ironcoders.aquaconectabackend.management.interfaces.rest.transform.UpdateIssueReportCommandFromResource;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Provider;
+import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProviderContextFacade.ProviderContextFacade;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -35,10 +38,12 @@ public class IssueReportController {
 
     private final IssueReportCommandService requestCommandService;
     private final IssueReportQueryService requestQueryService;
+    private final ProviderContextFacade providerContextFacade;
 
-    public IssueReportController(IssueReportCommandService requestCommandService, IssueReportQueryService requestQueryService) {
+    public IssueReportController(IssueReportCommandService requestCommandService, IssueReportQueryService requestQueryService, ProviderContextFacade providerContextFacade) {
         this.requestCommandService = requestCommandService;
         this.requestQueryService = requestQueryService;
+        this.providerContextFacade = providerContextFacade;
     }
 
     @PostMapping
@@ -93,9 +98,29 @@ public class IssueReportController {
 
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER')")
     public ResponseEntity<List<IssueReport>> getAllRequests() {
-        List<IssueReport> requests = requestQueryService.handle(new GetAllIssueReportsQuery());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        long userId = userDetails.getId();
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        List<IssueReport> requests;
+
+        if (isAdmin) {
+            // Admin: trae todos los reportes
+            requests = requestQueryService.handle(new GetAllIssueReportsQuery());
+        } else {
+            // Proveedor: busca su providerId y filtra por él
+            Optional<Provider> providerOptional = providerContextFacade.fetchProviderByUserId(userId);
+            if (providerOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            Long providerId = providerOptional.get().getId();
+            requests = requestQueryService.handle(new GetAllIsueReportsByProviderIdQuery(providerId));
+        }
 
         if (requests.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -103,7 +128,6 @@ public class IssueReportController {
 
         return ResponseEntity.ok(requests);
     }
-
 
 
 

@@ -54,26 +54,47 @@ public class WaterSupplyRequestController {
         this.providerContextFacade = providerContextFacade;
     }
 
-    @GetMapping("/my")
-    @PreAuthorize("hasRole('ROLE_RESIDENT')")
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_RESIDENT') or hasRole('ROLE_PROVIDER')")
     public List<WaterSupplyRequestResource> getAllMyWaterRequests() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
-        Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
-        if (residentOptional.isEmpty()) {
-            return Collections.emptyList();
+        boolean isResident = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_RESIDENT"));
+        boolean isProvider = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"));
+
+        List<WaterSupplyRequest> requests = waterRequestQueryService.handle(new GetAllWaterSupplyRequestsQuery());
+
+        if (isResident) {
+            Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
+            if (residentOptional.isEmpty()) {
+                return Collections.emptyList();
+            }
+            Long residentId = residentOptional.get().getId();
+            return requests.stream()
+                    .filter(request -> request.getResidentId().equals(residentId))
+                    .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                    .collect(Collectors.toList());
         }
-        Long residentId = residentOptional.get().getId();
 
-        return waterRequestQueryService.handle(new GetAllWaterSupplyRequestsQuery())
-                .stream()
-                .filter(request -> request.getResidentId().equals(residentId))
-                .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
-                .collect(Collectors.toList());
+        if (isProvider) {
+            Optional<Provider> providerOptional = providerContextFacade.fetchProviderByUserId(userId);
+            if (providerOptional.isEmpty()) {
+                return Collections.emptyList();
+            }
+            Long providerId = providerOptional.get().getId();
+            return requests.stream()
+                    .filter(request -> request.getProviderId().equals(providerId))
+                    .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                    .collect(Collectors.toList());
+        }
+
+        // Si por alguna razón no es ni residente ni provider, retorna vacío
+        return Collections.emptyList();
     }
-
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
