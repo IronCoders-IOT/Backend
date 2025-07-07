@@ -98,8 +98,7 @@ public class ResidentController {
         this.deviceContextFacade = deviceContextFacade;
         this.subscriptionContextFacade = subscriptionContextFacade;
     }
-
-    @PostMapping
+@PostMapping
 @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
 public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
     // 0. Get authenticated user id
@@ -142,11 +141,11 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .collect(Collectors.toList());
     }
 
-        @GetMapping("/{id}/subscriptions")
+        @GetMapping("/{residentId}/subscriptions")
         @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
-        public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long id) throws AccessDeniedException {
+        public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long residentId) throws AccessDeniedException {
 
-            var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(id);
+            var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(residentId);
 
             if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
 
@@ -253,7 +252,7 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         return ResponseEntity.ok(residentResources);
     }
 
-    @GetMapping("/me")
+    @GetMapping("/{residentId}/profiles")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> getAuthenticatedResident() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -302,7 +301,7 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
     }
 
 
-    @PutMapping("/me")
+    @PutMapping("/{residentId}/profiles")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> updateResident(@RequestBody UpdateResidentResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

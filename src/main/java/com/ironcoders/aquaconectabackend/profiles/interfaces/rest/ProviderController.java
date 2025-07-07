@@ -106,7 +106,7 @@ public class ProviderController {
     // }
 
 
-    @PutMapping("/me")
+    @PutMapping("/{providerId}/profiles")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> updateProvider(@RequestBody UpdateProviderResource resource) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -134,8 +134,8 @@ public class ProviderController {
 
 
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
-    @GetMapping("/{id}/residents")
-    public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable("id") Long providerId) {
+    @GetMapping("/{providerId}/residents")
+    public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable("providerId") Long providerId) {
      
         var query = new GetResidentsByProviderIdQuery(providerId);
         var residents = residentQueryService.handle(query);
@@ -152,10 +152,10 @@ public class ProviderController {
         return ResponseEntity.ok(residentResources);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{providerId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long id) {
-        var providerOptional = providerRepository.findById(id);
+    public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
+        var providerOptional = providerRepository.findById(providerId);
 
         if (providerOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -172,7 +172,7 @@ public class ProviderController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/me")
+    @GetMapping("/{providerId}/profiles")
     @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProviderResource> getMyProviderDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

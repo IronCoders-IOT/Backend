@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/api/v1/profile", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/profiles", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Profiles", description = "Profile Management Endpoints")
 @PreAuthorize("isAuthenticated()")
 public class ProfilesController {
@@ -57,7 +57,7 @@ public class ProfilesController {
         return new ResponseEntity<>(profileResource, HttpStatus.CREATED);
     }
 
-    @GetMapping("")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> getMyProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

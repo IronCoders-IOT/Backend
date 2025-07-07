@@ -53,10 +53,10 @@ public class UsersController {
      * @throws RuntimeException if the user is not found
      * @see UserResource
      */
-    @GetMapping(value = "/{userId}")
+    @GetMapping(value = "/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserResource> getUserById(@PathVariable Long userId) {
-        var getUserByIdQuery = new GetUserByIdQuery(userId);
+    public ResponseEntity<UserResource> getUserById(@PathVariable Long id) {
+        var getUserByIdQuery = new GetUserByIdQuery(id);
         var user = userQueryService.handle(getUserByIdQuery);
         if (user.isEmpty()) {
             return ResponseEntity.notFound().build();
