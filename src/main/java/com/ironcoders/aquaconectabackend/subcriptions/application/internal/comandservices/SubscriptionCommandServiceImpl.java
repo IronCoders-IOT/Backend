@@ -1,8 +1,8 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.comandservices;
 
-import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.Device;
-import com.ironcoders.aquaconectabackend.management.domain.model.commads.CreateDeviceCommand;
-import com.ironcoders.aquaconectabackend.management.interfaces.rest.acl.DeviceContextFacade;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.Device;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.commads.CreateDeviceCommand;
+import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.acl.DeviceContextFacade;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ResidentContextFacade.ResidentContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
