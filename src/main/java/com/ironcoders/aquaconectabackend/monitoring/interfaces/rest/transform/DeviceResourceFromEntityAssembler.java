@@ -1,9 +1,7 @@
 package com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.transform;
 
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.Device;
-import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.IssueReport;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.resources.DeviceResource;
-import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.resources.IssueReportResource;
 
 public class DeviceResourceFromEntityAssembler {
     public static DeviceResource toResourceFromEntity(Device aggregate) {

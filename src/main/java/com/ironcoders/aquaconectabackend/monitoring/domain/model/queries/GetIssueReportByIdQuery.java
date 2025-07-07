@@ -1,4 +1,0 @@
-package com.ironcoders.aquaconectabackend.monitoring.domain.model.queries;
-
-public record GetIssueReportByIdQuery(Long requestId) {
-}

@@ -13,12 +13,12 @@
     </parent>
 
     <groupId>com.acme.center</groupId>
-    <artifactId>learning-center-platform</artifactId>
+    <artifactId>aquaconecta-platform</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>learning-center-platform</name>
-    <description>learning-center-platform</description>
+    <name>aquaconecta-platform</name>
+    <description>aquaconecta-platform</description>
 
     <properties>
         <java.version>21</java.version>

@@ -3,8 +3,6 @@ package com.ironcoders.aquaconectabackend.monitoring.infrastructure.persistence.
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.Device;
-import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.WaterSupplyRequest;
-
 import java.util.List;
 import java.util.Optional;
 
