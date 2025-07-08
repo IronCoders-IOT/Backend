@@ -5,5 +5,5 @@ public record SubscriptionResource(
         String startDate,
         String endDate,
         String status,
-        Long sensorId, Long residentId ) {
+        Long sensorId, Long residentId, Float waterTankSize) {
 }

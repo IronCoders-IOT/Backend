@@ -14,7 +14,8 @@ public class CreateResidentCommandFromResourceAssembler {
                 resource.documentNumber(),
                 resource.documentType(),
                 resource.phone(),
-                providerId
+                providerId,
+                resource.waterTankSize()
         );
     }
 }

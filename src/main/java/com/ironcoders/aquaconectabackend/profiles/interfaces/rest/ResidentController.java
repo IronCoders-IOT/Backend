@@ -8,11 +8,6 @@ import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllD
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.acl.DeviceContextFacade;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.resources.DeviceResource;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.transform.DeviceResourceFromEntityAssembler;
-import com.ironcoders.aquaconectabackend.ServiceRequests.domain.model.aggregates.IssueReport;
-import com.ironcoders.aquaconectabackend.ServiceRequests.interfaces.rest.acl.IssueReportContextFacade;
-import com.ironcoders.aquaconectabackend.ServiceRequests.interfaces.rest.acl.WaterSupplyRequestContextFacade;
-import com.ironcoders.aquaconectabackend.ServiceRequests.interfaces.rest.resources.WaterSupplyRequestResource;
-import com.ironcoders.aquaconectabackend.ServiceRequests.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.DTO.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
@@ -34,6 +29,11 @@ import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.resources.Upda
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.CreateResidentCommandFromResourceAssembler;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.ResidentResourceFromEntityAssembler;
 import com.ironcoders.aquaconectabackend.profiles.interfaces.rest.transform.UpdateResidentCommandFromResource;
+import com.ironcoders.aquaconectabackend.requests.domain.model.aggregates.IssueReport;
+import com.ironcoders.aquaconectabackend.requests.interfaces.rest.acl.IssueReportContextFacade;
+import com.ironcoders.aquaconectabackend.requests.interfaces.rest.acl.WaterSupplyRequestContextFacade;
+import com.ironcoders.aquaconectabackend.requests.interfaces.rest.resources.WaterSupplyRequestResource;
+import com.ironcoders.aquaconectabackend.requests.interfaces.rest.transform.WaterRequestResourceFromAggregateAssembler;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.queries.GetAllSubscriptionsByResidentId;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.acl.SubscriptionContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.interfaces.rest.resources.SubscriptionResource;
@@ -141,20 +141,20 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .collect(Collectors.toList());
     }
 
-        @GetMapping("/{residentId}/subscriptions")
-        @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
-        public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long residentId) throws AccessDeniedException {
+    @GetMapping("/{residentId}/subscriptions")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
+    public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long residentId) throws AccessDeniedException {
 
-            var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(residentId);
+        var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(residentId);
 
-            if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
+        if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
 
-            var subscriptionResources = subscriptions.stream()
-                    .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
-                    .toList();
+        var subscriptionResources = subscriptions.stream()
+                .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
 
-            return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
-        }
+        return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
+    }
 
     @GetMapping("/{residentId}/issue-reports")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")

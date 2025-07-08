@@ -84,8 +84,12 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
         if (device.isEmpty()) {
             return Optional.empty();
         }
-
-        Subscription additionalSubscription = new Subscription( command.residentId(),device.get().getId());
+        Subscription additionalSubscription = new Subscription(
+            command.residentId(),
+            device.get().getId(),
+            resident.get().getProviderId(),
+            command.waterTankSize()
+        );
 
         subscriptionRepository.save(additionalSubscription);
         return Optional.of(additionalSubscription);

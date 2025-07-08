@@ -7,6 +7,7 @@ public class CreateSubscriptionCommandFromResourceAssembler {
     public static CreateAdditionalSubscriptionCommand toCommandFromResource( CreateAdditionalSubscriptionCommand resource) {
         return new CreateAdditionalSubscriptionCommand(
                 resource.residentId()
+                , resource.waterTankSize()
         );
     }
 

@@ -10,7 +10,8 @@ public record CreateResidentCommand(
         String documentNumber,
         String documentType,
         String phone,
-        Long providerId
+        Long providerId,
+        Float waterTankSize
 ) {
     public CreateResidentCommand {
         Objects.requireNonNull(firstName);

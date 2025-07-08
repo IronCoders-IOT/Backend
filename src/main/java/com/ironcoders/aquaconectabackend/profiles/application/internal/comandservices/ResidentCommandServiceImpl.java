@@ -23,6 +23,7 @@ import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa
 import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ProfilesContextFacade.ProfilesContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.subscription.SubscriptionCommandService;
+import com.ironcoders.aquaconectabackend.subcriptions.interfaces.acl.SubscriptionContextFacade;
 
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
     private final ProfilesContextFacade profilesContextFacade;
     private final ProviderRepository providerRepository;
     private final DeviceContextFacade deviceContextFacade;
-    private final SubscriptionCommandService subscriptionCommandService;
+    private final SubscriptionContextFacade subscriptionContextFacade;
 
     public ResidentCommandServiceImpl(
             ResidentRepository residentRepository,
@@ -49,7 +50,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
             ProviderRepository providerRepository,
             RoleRepository roleRepository,
             DeviceContextFacade deviceContextFacade,
-            SubscriptionCommandService subscriptionCommandService // Cambiado el tipo aquí
+            SubscriptionContextFacade subscriptionContextFacade // Cambiado el tipo aquí
     ) {
         this.residentRepository = residentRepository;
         this.profileRepository = profileRepository;
@@ -57,7 +58,7 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         this.profilesContextFacade = profilesContextFacade;
         this.providerRepository = providerRepository;
         this.deviceContextFacade = deviceContextFacade;
-        this.subscriptionCommandService = subscriptionCommandService;
+        this.subscriptionContextFacade = subscriptionContextFacade;
     }
 
     @Override
@@ -107,8 +108,8 @@ public class ResidentCommandServiceImpl implements ResidentCommandService {
         Optional<Device> device = deviceContextFacade.createDevice(createDeviceCommand);
 
         if (device.isPresent()) {
-            var createSubscriptionCommand = new CreateSubscriptionCommand(device.get().getId(), resident.getId());
-            subscriptionCommandService.handle(createSubscriptionCommand); // Llama al service, no al facade
+            var createSubscriptionCommand = new CreateSubscriptionCommand(device.get().getId(), resident.getId(), resident.getProviderId(),command.waterTankSize());
+            subscriptionContextFacade.createSubscription(createSubscriptionCommand); // Llama al service, no al facade
         }
 
         return new ResidentWithCredentials(resident, username, password);
