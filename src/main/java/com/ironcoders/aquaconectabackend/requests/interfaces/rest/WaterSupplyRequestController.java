@@ -65,8 +65,17 @@ public class WaterSupplyRequestController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_RESIDENT"));
         boolean isProvider = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"));
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         List<WaterSupplyRequest> requests = waterRequestQueryService.handle(new GetAllWaterSupplyRequestsQuery());
+
+        if (isAdmin) {
+            // El admin puede ver todo
+            return requests.stream()
+                    .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
+                    .collect(Collectors.toList());
+        }
 
         if (isResident) {
             Optional<Resident> residentOptional = residentContextFacade.fetchResidentByUserId(userId);
@@ -92,7 +101,7 @@ public class WaterSupplyRequestController {
                     .collect(Collectors.toList());
         }
 
-        // Si por alguna razón no es ni residente ni provider, retorna vacío
+        // Si no es ninguno de los anteriores, retorna vacío
         return Collections.emptyList();
     }
 
