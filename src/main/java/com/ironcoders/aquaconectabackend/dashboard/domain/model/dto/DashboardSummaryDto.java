@@ -1,6 +1,6 @@
-package com.ironcoders.aquaconectabackend.dashboard.domain.model.aggregates;
+package com.ironcoders.aquaconectabackend.dashboard.domain.model.dto;
 
-public class DashboardResumenDto {
+public class DashboardSummaryDto {
     private long totalProveedores;
     private long totalResidentes;
     private long suscripcionesActivas;
@@ -8,7 +8,7 @@ public class DashboardResumenDto {
     private float ingresosMensual;
 
     // Constructor completo
-    public DashboardResumenDto(long totalProveedores, long totalResidentes,
+    public DashboardSummaryDto(long totalProveedores, long totalResidentes,
                                long suscripcionesActivas, float ingresosTotales, float ingresosMensual) {
         this.totalProveedores = totalProveedores;
         this.totalResidentes = totalResidentes;
@@ -18,7 +18,7 @@ public class DashboardResumenDto {
     }
 
     // Constructor vacío
-    public DashboardResumenDto() {}
+    public DashboardSummaryDto() {}
 
     // Getters y setters
     public long getTotalProveedores() {

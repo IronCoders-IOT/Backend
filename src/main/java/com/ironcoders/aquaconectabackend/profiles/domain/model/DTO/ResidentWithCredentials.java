@@ -1,4 +1,4 @@
-package com.ironcoders.aquaconectabackend.profiles.domain.model.DTO;
+package com.ironcoders.aquaconectabackend.profiles.domain.model.dto;
 
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 

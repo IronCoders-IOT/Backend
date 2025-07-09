@@ -8,11 +8,11 @@ import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllD
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.acl.DeviceContextFacade;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.resources.DeviceResource;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.transform.DeviceResourceFromEntityAssembler;
-import com.ironcoders.aquaconectabackend.profiles.domain.model.DTO.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Profile;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.CreateResidentCommand;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.commands.UpdateResidentCommand;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.dto.ResidentWithCredentials;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetAllResidentsQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetProfileByUserIdQuery;
 import com.ironcoders.aquaconectabackend.profiles.domain.model.queries.GetResidentsByProviderIdQuery;

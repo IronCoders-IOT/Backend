@@ -1,6 +1,6 @@
 package com.ironcoders.aquaconectabackend.dashboard.application.internal.comandServices;
 
-import com.ironcoders.aquaconectabackend.dashboard.domain.model.aggregates.DashboardResumenDto;
+import com.ironcoders.aquaconectabackend.dashboard.domain.model.dto.DashboardSummaryDto;
 import com.ironcoders.aquaconectabackend.dashboard.domain.services.DashboardQueryService;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ProviderRepository;
 import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa.repositories.ResidentRepository;
@@ -20,7 +20,7 @@ public class DashboardServiceImpl implements DashboardQueryService {
     }
 
     @Override
-    public DashboardResumenDto getDashboard() {
+    public DashboardSummaryDto getDashboard() {
 
         long totalProveedores = providerRepository.count();
         long totalResidentes = residentRepository.count();
@@ -30,7 +30,7 @@ public class DashboardServiceImpl implements DashboardQueryService {
         Float ingresosTotales = subscriptionRepository.sumAllPrices();
         Float ingresosMensual = subscriptionRepository.sumCurrentMonthPrices();
 
-        return new DashboardResumenDto(
+        return new DashboardSummaryDto(
                 totalProveedores,
                 totalResidentes,
                 suscripcionesActivas,
