@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for provider management endpoints.
+ * Provides endpoints to create, update, and retrieve providers and their related data.
+ */
 @RestController
 @RequestMapping(value = "/api/v1/providers", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Providers", description = "Provider Management Endpoints")
@@ -47,10 +51,18 @@ public class ProviderController {
     private final ProviderQueryService providerQueryService;
     private final ProfileRepository profileRepository;
     private final ProviderRepository providerRepository;
-   private final ResidentQueryService residentQueryService;
-    // private final RequestQueryService requestQueryService;
+    private final ResidentQueryService residentQueryService;
     IamContextFacade iamContextFacade;
 
+    /**
+     * Constructor for dependency injection.
+     * @param providerCommandService Service for provider commands
+     * @param providerQueryService Service for provider queries
+     * @param profileRepository Repository for profiles
+     * @param providerRepository Repository for providers
+     * @param residentQueryService Service for resident queries
+     * @param iamContextFacade IAM context facade for user info
+     */
     public ProviderController(ProviderCommandService providerCommandService, ProviderQueryService providerQueryService, ProfileRepository profileRepository, ProviderRepository providerRepository , ResidentQueryService residentQueryService, IamContextFacade iamContextFacade) {
         this.providerCommandService = providerCommandService;
         this.providerQueryService = providerQueryService;
@@ -58,8 +70,14 @@ public class ProviderController {
         this.providerRepository = providerRepository;
         this.residentQueryService = residentQueryService;
         this.iamContextFacade = iamContextFacade;
-        // this.requestQueryService = requestQueryService;
     }
+
+    /**
+     * Endpoint to create a new provider profile.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @param resource The request body containing provider data
+     * @return ResponseEntity with the created provider resource or error message
+     */
     @PostMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createProfile(@RequestBody CreateProviderResource resource) {
@@ -95,17 +113,12 @@ public class ProviderController {
         return new ResponseEntity<>(providerResource, HttpStatus.CREATED);
     }
 
-    // @GetMapping("/{id}/requests")
-    // @PreAuthorize("hasRole('ROLE_PROVIDER')")
-    // public ResponseEntity<List<RequestResource>> getRequestsByProvider(@PathVariable Long providerId) {
-    //     var requests = requestQueryService.handle(new GetAllRequestsByProviderIdQuery(providerId));
-    //     var resources = requests.stream()
-    //             .map(RequestResourceFromEntityAssembler::toResourceFromEntity)
-    //             .collect(Collectors.toList());
-    //     return ResponseEntity.ok(resources);
-    // }
-
-
+    /**
+     * Endpoint to update a provider's profile.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @param resource The request body containing updated provider data
+     * @return ResponseEntity with the updated provider resource or NOT_FOUND if not found
+     */
     @PutMapping("/{providerId}/profiles")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> updateProvider(@RequestBody UpdateProviderResource resource) {
@@ -132,7 +145,12 @@ public class ProviderController {
         return ResponseEntity.ok(response);
     }
 
-
+    /**
+     * Endpoint to get all residents associated with a provider.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @param providerId The ID of the provider
+     * @return ResponseEntity with a list of resident resources
+     */
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/{providerId}/residents")
     public ResponseEntity<List<ResidentResource>> getResidentsByProviderId(@PathVariable("providerId") Long providerId) {
@@ -152,6 +170,12 @@ public class ProviderController {
         return ResponseEntity.ok(residentResources);
     }
 
+    /**
+     * Endpoint to get a provider by its ID.
+     * Only accessible by ADMIN role.
+     * @param providerId The ID of the provider
+     * @return ResponseEntity with the provider resource or NOT_FOUND if not found
+     */
     @GetMapping(value = "/{providerId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ProviderResource> getProviderById(@PathVariable Long providerId) {
@@ -172,6 +196,11 @@ public class ProviderController {
         return ResponseEntity.ok(resource);
     }
 
+    /**
+     * Endpoint to get the provider details for the authenticated provider.
+     * Only accessible by PROVIDER role.
+     * @return ResponseEntity with the provider resource or NOT_FOUND if not found
+     */
     @GetMapping("/{providerId}/profiles")
     @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProviderResource> getMyProviderDetails() {
@@ -199,6 +228,11 @@ public class ProviderController {
         return ResponseEntity.ok(resource);
     }
 
+    /**
+     * Endpoint to get all providers.
+     * Only accessible by ADMIN role.
+     * @return ResponseEntity with a list of provider resources
+     */
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ProviderResource>> getAllProviders() {

@@ -26,6 +26,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+/**
+ * REST controller for profile management endpoints.
+ * Provides endpoints to create, retrieve, and update user profiles.
+ */
 @RestController
 @RequestMapping(value = "/api/v1/profiles", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Profiles", description = "Profile Management Endpoints")
@@ -34,29 +38,45 @@ public class ProfilesController {
     private final ProfileCommandService profileCommandService;
     private final ProfileQueryService profileQueryService;
 
+    /**
+     * Constructor for dependency injection.
+     * @param profileCommandService Service for profile commands
+     * @param profileQueryService Service for profile queries
+     */
     public ProfilesController(ProfileCommandService profileCommandService, ProfileQueryService profileQueryService) {
         this.profileCommandService = profileCommandService;
         this.profileQueryService = profileQueryService;
     }
 
+    /**
+     * Endpoint to create a new profile.
+     * Only accessible by ADMIN or PROVIDER roles.
+     * @param resource The request body containing profile data
+     * @return ResponseEntity with the created profile resource or BAD_REQUEST if creation fails
+     */
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER')")
     public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource resource) {
-        // 1. Obtén el userId del usuario autenticado
+        // 1. Get the userId of the authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Long userId = userDetails.getId();
 
-        // 2. Pásalo al assembler para crear el comando
+        // 2. Pass it to the assembler to create the command
         CreateProfileCommand createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(resource, userId);
 
-        // 3. Llama al servicio como siempre
+        // 3. Call the service as usual
         var profile = profileCommandService.handle(createProfileCommand);
         if (profile.isEmpty()) return ResponseEntity.badRequest().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return new ResponseEntity<>(profileResource, HttpStatus.CREATED);
     }
 
+    /**
+     * Endpoint to retrieve the profile of the authenticated user.
+     * Accessible by ADMIN, PROVIDER, or RESIDENT roles.
+     * @return ResponseEntity with the profile resource or NOT_FOUND if not found
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> getMyProfile() {
@@ -69,7 +89,13 @@ public class ProfilesController {
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
-   
+
+    /**
+     * Endpoint to update the profile of the authenticated user.
+     * Accessible by ADMIN, PROVIDER, or RESIDENT roles.
+     * @param resource The request body containing updated profile data
+     * @return ResponseEntity with the updated profile resource or NOT_FOUND if not found
+     */
     @PutMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ProfileResource> updateProfile(@RequestBody UpdateProfileResource resource) {
@@ -85,5 +111,4 @@ public class ProfilesController {
                 .map(updatedProfile -> ResponseEntity.ok(ProfileResourceFromEntityAssembler.toResourceFromEntity(updatedProfile)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
 }

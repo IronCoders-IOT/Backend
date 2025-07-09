@@ -56,6 +56,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
+/**
+ * REST controller for resident management endpoints.
+ * Provides endpoints to create, update, and retrieve residents and their related data.
+ */
 @RestController
 @RequestMapping(value = "/api/v1/residents", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Residents", description = "Resident Management Endpoints")
@@ -68,12 +72,26 @@ public class ResidentController {
     private final ProviderQueryService providerQueryService;
     private final ProfileQueryService profileQueryService;
 
-   IamContextFacade iamContextFacade;
-   WaterSupplyRequestContextFacade waterSupplyRequestContextFacade;
-   IssueReportContextFacade issueReportContextFacade;
-   DeviceContextFacade  deviceContextFacade;
-   SubscriptionContextFacade subscriptionContextFacade;
+    IamContextFacade iamContextFacade;
+    WaterSupplyRequestContextFacade waterSupplyRequestContextFacade;
+    IssueReportContextFacade issueReportContextFacade;
+    DeviceContextFacade  deviceContextFacade;
+    SubscriptionContextFacade subscriptionContextFacade;
 
+    /**
+     * Constructor for dependency injection.
+     * @param residentCommandService Service for resident commands
+     * @param residentQueryService Service for resident queries
+     * @param residentRepository Repository for residents
+     * @param providerQueryService Service for provider queries
+     * @param profileRepository Repository for profiles
+     * @param iamContextFacade IAM context facade for user info
+     * @param waterSupplyRequestContextFacade Facade for water supply requests
+     * @param profileQueryService Service for profile queries
+     * @param issueReportContextFacade Facade for issue reports
+     * @param deviceContextFacade Facade for device context
+     * @param subscriptionContextFacade Facade for subscription context
+     */
     public ResidentController(
             ResidentCommandService residentCommandService,
             ResidentQueryService residentQueryService,
@@ -86,7 +104,7 @@ public class ResidentController {
             IssueReportContextFacade issueReportContextFacade,
             DeviceContextFacade deviceContextFacade,
             SubscriptionContextFacade subscriptionContextFacade
-            ) {
+    ) {
         this.residentCommandService = residentCommandService;
         this.residentQueryService = residentQueryService;
         this.residentRepository = residentRepository;
@@ -98,40 +116,51 @@ public class ResidentController {
         this.deviceContextFacade = deviceContextFacade;
         this.subscriptionContextFacade = subscriptionContextFacade;
     }
-@PostMapping
-@PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
-public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
-    // 0. Get authenticated user id
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    Long userId = userDetails.getId();
 
-    // 1. Convert the resource to a command, passing the authenticated user id
-    CreateResidentCommand command = CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource, userId);
-    // (O ajusta el assembler para que reciba el userId y lo ponga en el command)
+    /**
+     * Endpoint to create a new resident.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @param resource The request body containing resident data
+     * @return ResponseEntity with the created resident resource
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResidentResource> createResident(@RequestBody CreateResidentResource resource) throws AccessDeniedException {
+        // Get authenticated user id
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
 
-    // 2. Execute the use case
-    ResidentWithCredentials result = residentCommandService.handle(command);
+        // Convert the resource to a command, passing the authenticated user id
+        CreateResidentCommand command = CreateResidentCommandFromResourceAssembler.toCommandFromResource(resource, userId);
 
-    // 3. Find the resident's profile using the NEW userId (not resource.userId())
-    Long newUserId = result.resident().getUserId();
-    Optional<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(newUserId));
-    if (profiles.isEmpty()) {
-        throw new IllegalStateException("Profile for the new resident could not be found.");
+        // Execute the use case
+        ResidentWithCredentials result = residentCommandService.handle(command);
+
+        // Find the resident's profile using the new userId
+        Long newUserId = result.resident().getUserId();
+        Optional<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(newUserId));
+        if (profiles.isEmpty()) {
+            throw new IllegalStateException("Profile for the new resident could not be found.");
+        }
+
+        // Convert the result to a resource, including generated username and password
+        ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(
+                result.resident(),
+                result.username(),
+                result.password(),
+                profiles.get()
+        );
+
+        return new ResponseEntity<>(residentResource, HttpStatus.CREATED);
     }
 
-    // 4. Convert the result to a resource, including generated username and password
-    ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntityWithCredentials(
-            result.resident(),
-            result.username(),
-            result.password(),
-            profiles.get()
-    );
-
-    return new ResponseEntity<>(residentResource, HttpStatus.CREATED);
-}
-
-
+    /**
+     * Endpoint to get all devices for a resident by resident ID.
+     * Only accessible by PROVIDER or RESIDENT roles.
+     * @param residentId The ID of the resident
+     * @return List of device resources
+     */
     @GetMapping("/{residentId}/devices")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public List<DeviceResource> getAllDevicesByResidentId(@PathVariable Long residentId) {
@@ -141,21 +170,29 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Endpoint to get all subscriptions for a resident by resident ID.
+     * Accessible by PROVIDER, ADMIN, or RESIDENT roles.
+     * @param residentId The ID of the resident
+     * @return ResponseEntity with a list of subscription resources
+     */
     @GetMapping("/{residentId}/subscriptions")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<SubscriptionResource>> getSubscriptionsByResidentId(@PathVariable Long residentId) throws AccessDeniedException {
-
         var subscriptions = subscriptionContextFacade.fetchSubscriptionsByResidentId(residentId);
-
         if (subscriptions.isEmpty()) return ResponseEntity.notFound().build();
-
         var subscriptionResources = subscriptions.stream()
                 .map(SubscriptionResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
-
         return new ResponseEntity<>(subscriptionResources, HttpStatus.OK);
     }
 
+    /**
+     * Endpoint to get all issue reports for a resident by resident ID.
+     * Only accessible by PROVIDER or RESIDENT roles.
+     * @param residentId The ID of the resident
+     * @return ResponseEntity with a list of issue reports
+     */
     @GetMapping("/{residentId}/issue-reports")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
     public ResponseEntity<List<IssueReport>> getRequestsByResidentId(@PathVariable Long residentId) {
@@ -163,10 +200,15 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .stream()
                 .filter(request -> request.getResidentId().equals(residentId))
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(requests);
     }
 
+    /**
+     * Endpoint to get all water supply requests for a resident by resident ID.
+     * Only accessible by PROVIDER role.
+     * @param residentId The ID of the resident
+     * @return List of water supply request resources
+     */
     @GetMapping("/{residentId}/water-supply-requests")
     @PreAuthorize("hasRole('ROLE_PROVIDER')")
     public List<WaterSupplyRequestResource> getWaterRequestsByResident(@PathVariable Long residentId) {
@@ -174,23 +216,16 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
-
         final Long providerId;
 
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PROVIDER"))) {
             Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
-
             if (providerOptional.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found");
             }
-
             providerId = providerOptional.get().getId();
-
             List<Resident> residents = residentQueryService.handle(new GetResidentsByProviderIdQuery(providerId));
-
-
             boolean isResidentValid = residents.stream().anyMatch(resident -> resident.getId().equals(residentId));
-
             if (!isResidentValid) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Resident does not belong to this provider");
             }
@@ -198,17 +233,19 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
             providerId = null;
         }
 
-
         List<WaterSupplyRequestResource> result = waterSupplyRequestContextFacade.fetchWaterRequestsByResidentId(residentId)
                 .stream()
                 .filter(resource -> providerId == null || resource.getProviderId().equals(providerId))
                 .map(WaterRequestResourceFromAggregateAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
-
         return result;
     }
 
-
+    /**
+     * Endpoint to get all residents for the authenticated provider or admin.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @return ResponseEntity with a list of resident resources
+     */
     @GetMapping
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ResidentResource>> getResidentsForAuthenticatedProviderOrAdmin() {
@@ -222,17 +259,16 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         List<Resident> residents;
 
         if (isAdmin) {
-            // Si es admin, obtener todos los residentes
+            // If admin, get all residents
             residents = residentQueryService.handle(new GetAllResidentsQuery());
         } else {
-            // Buscar el proveedor por su userId
+            // Find the provider by userId
             Optional<Provider> providerOptional = providerQueryService.findByUserId(userId);
             if (providerOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             Long providerId = providerOptional.get().getId();
-
-            // Consultar residentes del proveedor
+            // Query residents of the provider
             residents = residentQueryService.handle(new GetResidentsByProviderIdQuery(providerId));
         }
 
@@ -252,6 +288,11 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         return ResponseEntity.ok(residentResources);
     }
 
+    /**
+     * Endpoint to get the authenticated resident's profile.
+     * Only accessible by RESIDENT role.
+     * @return ResponseEntity with the resident resource or NOT_FOUND if not found
+     */
     @GetMapping("/{residentId}/profiles")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> getAuthenticatedResident() {
@@ -259,7 +300,7 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         long userId = userDetails.getId();
 
-        List<Resident> residentOptional = residentQueryService.findByUserId (userId);
+        List<Resident> residentOptional = residentQueryService.findByUserId(userId);
         if (residentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -270,37 +311,39 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
                 .stream()
                 .collect(Collectors.toList());
         ResidentResource resource = ResidentResourceFromEntityAssembler
-                .toResourceFromEntityWithCredentials(resident, username, null,profiles.get(0));
+                .toResourceFromEntityWithCredentials(resident, username, null, profiles.get(0));
 
         return ResponseEntity.ok(resource);
     }
 
-
+    /**
+     * Endpoint to get a resident by their ID.
+     * Only accessible by PROVIDER or ADMIN roles.
+     * @param residentId The ID of the resident
+     * @return ResponseEntity with a list containing the resident resource or NOT_FOUND if not found
+     */
     @GetMapping("/{residentId}")
     @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ResidentResource>> getResidentById(@PathVariable Long residentId) {
-
-
         Optional<Resident> residentOptional = residentQueryService.findById(residentId);
         if (residentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         Resident resident = residentOptional.get();
-
         Optional<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(resident.getUserId()));
         if (profiles.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntity(resident, profiles.get());
-
         return ResponseEntity.ok(List.of(residentResource));
-
-
     }
 
-
+    /**
+     * Endpoint to update a resident's profile.
+     * Only accessible by RESIDENT role.
+     * @param resource The request body containing updated resident data
+     * @return ResponseEntity with the updated resident resource or NOT_FOUND if not found
+     */
     @PutMapping("/{residentId}/profiles")
     @PreAuthorize("hasRole('ROLE_RESIDENT')")
     public ResponseEntity<ResidentResource> updateResident(@RequestBody UpdateResidentResource resource) {
@@ -309,21 +352,15 @@ public ResponseEntity<ResidentResource> createResident(@RequestBody CreateReside
         long userId = userDetails.getId();
 
         UpdateResidentCommand updateResidentCommand = UpdateResidentCommandFromResource.toCommandFromResource(resource, userId);
-
         Optional<Resident> updatedResidentOptional = residentCommandService.handle(updateResidentCommand);
-
         if (updatedResidentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         Resident updatedResident = updatedResidentOptional.get();
         List<Profile> profiles = profileQueryService.handle(new GetProfileByUserIdQuery(updatedResident.getUserId()))
                 .stream()
                 .collect(Collectors.toList());
-
         ResidentResource residentResource = ResidentResourceFromEntityAssembler.toResourceFromEntity(updatedResident, profiles.get(0));
-
         return ResponseEntity.ok(residentResource);
     }
-
 }

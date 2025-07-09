@@ -7,35 +7,51 @@ import com.ironcoders.aquaconectabackend.profiles.infrastructure.persistence.jpa
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service implementation for dashboard queries.
+ * Provides summary statistics for the dashboard view.
+ */
 @Service
 public class DashboardServiceImpl implements DashboardQueryService {
     private final ProviderRepository providerRepository;
     private final ResidentRepository residentRepository;
     private final SubscriptionRepository subscriptionRepository;
 
+    /**
+     * Constructor for dependency injection.
+     * @param providerRepository Repository for providers
+     * @param residentRepository Repository for residents
+     * @param subscriptionRepository Repository for subscriptions
+     */
     public DashboardServiceImpl(ProviderRepository providerRepository, ResidentRepository residentRepository, SubscriptionRepository subscriptionRepository) {
         this.providerRepository = providerRepository;
         this.residentRepository = residentRepository;
         this.subscriptionRepository = subscriptionRepository;
     }
 
+    /**
+     * Retrieves dashboard summary statistics.
+     * @return DashboardSummaryDto containing totals and income
+     */
     @Override
     public DashboardSummaryDto getDashboard() {
-
-        long totalProveedores = providerRepository.count();
-        long totalResidentes = residentRepository.count();
-        long suscripcionesActivas = subscriptionRepository.countByStatus("ACTIVE");
-
-        // Suma de ingresos
-        Float ingresosTotales = subscriptionRepository.sumAllPrices();
-        Float ingresosMensual = subscriptionRepository.sumCurrentMonthPrices();
+        // Get total number of providers
+        long totalProviders = providerRepository.count();
+        // Get total number of residents
+        long totalResidents = residentRepository.count();
+        // Get total number of active subscriptions
+        long activeSubscriptions = subscriptionRepository.countByStatus("ACTIVE");
+        // Get total income from all subscriptions
+        Float totalIncome = subscriptionRepository.sumAllPrices();
+        // Get income for the current month
+        Float monthlyIncome = subscriptionRepository.sumCurrentMonthPrices();
 
         return new DashboardSummaryDto(
-                totalProveedores,
-                totalResidentes,
-                suscripcionesActivas,
-                ingresosTotales != null ? ingresosTotales : 0f,
-                ingresosMensual != null ? ingresosMensual : 0f
+                totalProviders,
+                totalResidents,
+                activeSubscriptions,
+                totalIncome != null ? totalIncome : 0f,
+                monthlyIncome != null ? monthlyIncome : 0f
         );
     }
 }

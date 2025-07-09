@@ -1,65 +1,75 @@
 package com.ironcoders.aquaconectabackend.dashboard.domain.model.dto;
 
+/**
+ * Data Transfer Object for dashboard summary statistics.
+ */
 public class DashboardSummaryDto {
-    private long totalProveedores;
-    private long totalResidentes;
-    private long suscripcionesActivas;
-    private float ingresosTotales;
-    private float ingresosMensual;
+    private long totalProviders;
+    private long totalResidents;
+    private long activeSubscriptions;
+    private float totalIncome;
+    private float monthlyIncome;
 
-    // Constructor completo
-    public DashboardSummaryDto(long totalProveedores, long totalResidentes,
-                               long suscripcionesActivas, float ingresosTotales, float ingresosMensual) {
-        this.totalProveedores = totalProveedores;
-        this.totalResidentes = totalResidentes;
-        this.suscripcionesActivas = suscripcionesActivas;
-        this.ingresosTotales = ingresosTotales;
-        this.ingresosMensual = ingresosMensual;
+    /**
+     * Full constructor for DashboardSummaryDto.
+     * @param totalProviders Total number of providers
+     * @param totalResidents Total number of residents
+     * @param activeSubscriptions Number of active subscriptions
+     * @param totalIncome Total income from all subscriptions
+     * @param monthlyIncome Income for the current month
+     */
+    public DashboardSummaryDto(long totalProviders, long totalResidents,
+                               long activeSubscriptions, float totalIncome, float monthlyIncome) {
+        this.totalProviders = totalProviders;
+        this.totalResidents = totalResidents;
+        this.activeSubscriptions = activeSubscriptions;
+        this.totalIncome = totalIncome;
+        this.monthlyIncome = monthlyIncome;
     }
 
-    // Constructor vacío
+    /**
+     * Empty constructor.
+     */
     public DashboardSummaryDto() {}
 
-    // Getters y setters
-    public long getTotalProveedores() {
-        return totalProveedores;
+    // Getters and setters
+    public long getTotalProviders() {
+        return totalProviders;
     }
 
-    public void setTotalProveedores(long totalProveedores) {
-        this.totalProveedores = totalProveedores;
+    public void setTotalProviders(long totalProviders) {
+        this.totalProviders = totalProviders;
     }
 
-    public long getTotalResidentes() {
-        return totalResidentes;
+    public long getTotalResidents() {
+        return totalResidents;
     }
 
-    public void setTotalResidentes(long totalResidentes) {
-        this.totalResidentes = totalResidentes;
+    public void setTotalResidents(long totalResidents) {
+        this.totalResidents = totalResidents;
     }
 
-
-
-    public long getSuscripcionesActivas() {
-        return suscripcionesActivas;
+    public long getActiveSubscriptions() {
+        return activeSubscriptions;
     }
 
-    public void setSuscripcionesActivas(long suscripcionesActivas) {
-        this.suscripcionesActivas = suscripcionesActivas;
+    public void setActiveSubscriptions(long activeSubscriptions) {
+        this.activeSubscriptions = activeSubscriptions;
     }
 
-    public float getIngresosTotales() {
-        return ingresosTotales;
+    public float getTotalIncome() {
+        return totalIncome;
     }
 
-    public void setIngresosTotales(float ingresosTotales) {
-        this.ingresosTotales = ingresosTotales;
+    public void setTotalIncome(float totalIncome) {
+        this.totalIncome = totalIncome;
     }
 
-    public float getIngresosMensual() {
-        return ingresosMensual;
+    public float getMonthlyIncome() {
+        return monthlyIncome;
     }
 
-    public void setIngresosMensual(float ingresosMensual) {
-        this.ingresosMensual = ingresosMensual;
+    public void setMonthlyIncome(float monthlyIncome) {
+        this.monthlyIncome = monthlyIncome;
     }
 }

@@ -23,6 +23,10 @@ import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.transform.Ev
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for device-related endpoints.
+ * Provides endpoints to retrieve device and event information.
+ */
 @RestController
 @RequestMapping(value = "/api/v1/devices", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Devices", description = "Device Management endpoints")
@@ -32,11 +36,21 @@ public class DeviceController {
     private final DeviceQueryService deviceQueryService;
     private final EventQueryService eventQueryService;
 
+    /**
+     * Constructor for dependency injection.
+     * @param deviceQueryService Service for device queries
+     * @param eventQueryService Service for event queries
+     */
     public DeviceController(DeviceQueryService deviceQueryService, EventQueryService eventQueryService) {
         this.deviceQueryService = deviceQueryService;
         this.eventQueryService = eventQueryService;
     }
 
+    /**
+     * Retrieves a device by its ID.
+     * @param id The ID of the device
+     * @return ResponseEntity with the device resource or 404 if not found
+     */
     @GetMapping("/{id}")
     public ResponseEntity<DeviceResource> getSensorByResidentId(@PathVariable Long id) {
         return deviceQueryService.handle(new GetDeviceByIdQuery(id))
@@ -45,6 +59,11 @@ public class DeviceController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Retrieves all events for a given sensor (device) ID.
+     * @param id The ID of the sensor (device)
+     * @return ResponseEntity with a list of event resources
+     */
     @GetMapping("/{id}/events")
     public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
         var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
@@ -53,5 +72,4 @@ public class DeviceController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(resources);
     }
-
 }
