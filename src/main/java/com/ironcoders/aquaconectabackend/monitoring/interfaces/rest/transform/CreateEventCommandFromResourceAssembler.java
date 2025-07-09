@@ -10,7 +10,7 @@ public class CreateEventCommandFromResourceAssembler {
                 resource.eventType(),
                 resource.qualityValue(),
                 resource.levelValue(),
-                resource.sensorId()
+                resource.deviceId()
         );
     }
 

@@ -21,22 +21,22 @@ public class Event extends AuditableAbstractAggregateRoot<Event> {
     private String levelValue;
 
     @Column(nullable = false)
-    private Long sensorId;
+    private Long deviceId;
 
     public Event() {}
 
-    public Event(String eventType, String qualityValue, String levelValue, Long sensorId) {
+    public Event(String eventType, String qualityValue, String levelValue, Long deviceId) {
         this.eventType = eventType;
         this.qualityValue = qualityValue;
         this.levelValue = levelValue;
-        this.sensorId = sensorId;
+        this.deviceId = deviceId;
     }
 
     public Event(CreateEventCommand command){
         this.eventType= command.eventType();
         this.qualityValue = command.qualityValue();
         this.levelValue = command.levelValue();
-        this.sensorId = command.sensorId();
+        this.deviceId = command.deviceId();
     }
 
 

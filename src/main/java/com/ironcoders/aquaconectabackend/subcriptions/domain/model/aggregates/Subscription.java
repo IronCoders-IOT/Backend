@@ -22,7 +22,7 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
     @Column(nullable = false)
     private String status;
     @Column(nullable = false)
-    private Long sensorId;
+    private Long deviceId;
     @Column(nullable = false)
     private Long residentId;
     @Column(nullable = false)
@@ -36,17 +36,17 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
         this.startDate = LocalDate.now(); // Fecha actual
         this.endDate = this.startDate.plusMonths(1); // Por ejemplo, un mes de suscripción
         this.status = "ACTIVE"; // Estado inicial, ajusta según tu lógica
-        this.sensorId = command.sensorId();
+        this.deviceId = command.deviceId();
         this.residentId = command.residentId(); // Corrige esto, antes tenías: this.residentId = this.residentId
         this.providerId = command.providerId();
         this.waterTankSize = command.waterTankSize(); // Asegúrate de que este campo esté en el comando
     }
-    public Subscription(Long residentId, Long sensorId, Long providerId, Float waterTankSize) {
+    public Subscription(Long residentId, Long deviceId, Long providerId, Float waterTankSize) {
         this.residentId = residentId;
         this.startDate = LocalDate.now();
         this.endDate = this.startDate.plusMonths(1);
         this.status = "ACTIVE";
-        this.sensorId = sensorId;
+        this.deviceId = deviceId;
         this.providerId = providerId;
         this.waterTankSize = waterTankSize;
     }

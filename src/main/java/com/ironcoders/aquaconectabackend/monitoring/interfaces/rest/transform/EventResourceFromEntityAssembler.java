@@ -13,7 +13,7 @@ public class EventResourceFromEntityAssembler {
                 entity.getEventType(),
                 entity.getQualityValue(),
                 entity.getLevelValue(),
-                entity.getSensorId()
+                entity.getDeviceId()
 
         );
     }

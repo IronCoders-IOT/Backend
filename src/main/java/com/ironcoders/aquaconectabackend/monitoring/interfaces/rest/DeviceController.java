@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllDevicesByResidentId;
-import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsBySensorId;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsByDeviceId;
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetDeviceByIdQuery;
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetDeviceByResidentId;
 import com.ironcoders.aquaconectabackend.monitoring.domain.services.DeviceQueryService;
@@ -65,8 +65,8 @@ public class DeviceController {
      * @return ResponseEntity with a list of event resources
      */
     @GetMapping("/{id}/events")
-    public ResponseEntity<List<EventResource>> getEventsBySensorId(@PathVariable Long id) {
-        var events = eventQueryService.handle(new GetAllEventsBySensorId(id));
+    public ResponseEntity<List<EventResource>> getEventsByDeviceId(@PathVariable Long id) {
+        var events = eventQueryService.handle(new GetAllEventsByDeviceId(id));
         var resources = events.stream()
                 .map(EventResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());

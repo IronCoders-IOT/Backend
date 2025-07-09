@@ -7,7 +7,7 @@ public class SubscriptionResourceFromEntityAssembler {
 
     public static SubscriptionResource toResourceFromEntity(Subscription entity) {
         return new SubscriptionResource(entity.getId(), entity.getStartDate().toString(),
-                entity.getEndDate().toString(), entity.getStatus(), entity.getSensorId(),
+                entity.getEndDate().toString(), entity.getStatus(), entity.getDeviceId(),
                 entity.getResidentId(), entity.getWaterTankSize());
     }
 }

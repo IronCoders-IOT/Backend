@@ -34,6 +34,6 @@ public class DeviceQueryServiceImpl implements DeviceQueryService {
 
     @Override
     public Optional<Device>handle(GetDeviceByIdQuery query){
-        return sensorRepository.findById(query.sensorId());
+        return sensorRepository.findById(query.deviceId());
     }
 }

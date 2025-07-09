@@ -4,6 +4,6 @@ public record EventResource(
         Long id,String eventType,
         String qualityValue,
         String levelValue,
-        Long sensorId
+        Long deviceId
 ) {
 }

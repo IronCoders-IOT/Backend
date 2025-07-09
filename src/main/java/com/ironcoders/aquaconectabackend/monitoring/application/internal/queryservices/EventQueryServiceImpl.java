@@ -2,7 +2,7 @@ package com.ironcoders.aquaconectabackend.monitoring.application.internal.querys
 import org.springframework.stereotype.Service;
 
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.Event;
-import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsBySensorId;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsByDeviceId;
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetEventByIdQuery;
 import com.ironcoders.aquaconectabackend.monitoring.domain.services.EventQueryService;
 import com.ironcoders.aquaconectabackend.monitoring.infrastructure.persistence.jpa.repositories.EventRepository;
@@ -24,8 +24,8 @@ public class EventQueryServiceImpl implements EventQueryService {
         return eventRepository.findById(query.eventId()); }
 
     @Override
-    public List<Event> handle(GetAllEventsBySensorId query) {
-        return eventRepository.findBySensorId(query.sensorId());
+    public List<Event> handle(GetAllEventsByDeviceId query) {
+        return eventRepository.findByDeviceId(query.deviceId());
     }
 
 

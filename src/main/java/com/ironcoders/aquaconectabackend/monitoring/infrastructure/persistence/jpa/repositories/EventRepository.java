@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
-    List<Event> findBySensorId(Long sensorId);
+    List<Event> findByDeviceId(Long deviceId);
 }

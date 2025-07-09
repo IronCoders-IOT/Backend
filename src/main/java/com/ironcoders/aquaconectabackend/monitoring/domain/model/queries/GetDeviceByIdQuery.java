@@ -1,4 +1,4 @@
 package com.ironcoders.aquaconectabackend.monitoring.domain.model.queries;
 
-public record GetDeviceByIdQuery(Long sensorId) {
+public record GetDeviceByIdQuery(Long deviceId) {
 }

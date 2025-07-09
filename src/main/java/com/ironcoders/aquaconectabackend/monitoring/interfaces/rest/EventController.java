@@ -7,7 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ironcoders.aquaconectabackend.monitoring.domain.model.commads.CreateEventCommand;
-import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsBySensorId;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.queries.GetAllEventsByDeviceId;
 import com.ironcoders.aquaconectabackend.monitoring.domain.services.EventCommandService;
 import com.ironcoders.aquaconectabackend.monitoring.domain.services.EventQueryService;
 import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.resources.CreateEventResource;
