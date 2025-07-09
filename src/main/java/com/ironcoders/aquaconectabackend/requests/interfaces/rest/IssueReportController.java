@@ -86,7 +86,7 @@ public class IssueReportController {
 
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')")
+    @PreAuthorize("hasRole('ROLE_PROVIDER') or hasRole('ROLE_RESIDENT')  or hasRole('ROLE_ADMIN')")
     public ResponseEntity<IssueReportResource> getRequestById(@PathVariable Long id) {
         return requestQueryService.handle(new GetIssueReportByIdQuery(id))
                 .map(IssueReportResourceFromEntityAssembler::toResourceFromEntity)
