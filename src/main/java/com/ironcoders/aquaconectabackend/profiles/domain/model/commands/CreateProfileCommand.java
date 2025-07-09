@@ -2,7 +2,7 @@ package com.ironcoders.aquaconectabackend.profiles.domain.model.commands;
 
 import java.util.Objects;
 
-public record CreateProfileCommand(String firstName, String lastName, String email, String direction, String documentNumber, String documentType, String phone) {
+public record CreateProfileCommand(String firstName, String lastName, String email, String direction, String documentNumber, String documentType, String phone, Long userId) {
 
 
     public CreateProfileCommand {
@@ -13,19 +13,8 @@ public record CreateProfileCommand(String firstName, String lastName, String ema
         Objects.requireNonNull(documentNumber, "documentNumber cannot be null");
         Objects.requireNonNull(documentType, "documentType cannot be null");
         Objects.requireNonNull(phone, "phone cannot be null");
+        Objects.requireNonNull(userId, "userId cannot be null");
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
