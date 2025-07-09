@@ -55,7 +55,7 @@ public class WaterSupplyRequestController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_RESIDENT') or hasRole('ROLE_PROVIDER')")
+    @PreAuthorize("hasRole('ROLE_RESIDENT') or hasRole('ROLE_PROVIDER') or hasRole('ROLE_ADMIN')")
     public List<WaterSupplyRequestResource> getAllMyWaterRequests() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
