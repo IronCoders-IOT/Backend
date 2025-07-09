@@ -30,7 +30,8 @@ public class ProfilesContextFacade {
                 direction,
                 documentNumber,
                 documentType,
-                phone
+                phone,
+                userId  
         );
         profileCommandService.handle(userId, command);
     }

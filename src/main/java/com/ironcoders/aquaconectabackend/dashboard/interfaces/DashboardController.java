@@ -1,6 +1,6 @@
 package com.ironcoders.aquaconectabackend.dashboard.interfaces;
 
-import com.ironcoders.aquaconectabackend.dashboard.domain.model.aggregates.DashboardResumenDto;
+import com.ironcoders.aquaconectabackend.dashboard.domain.model.dto.DashboardSummaryDto;
 import com.ironcoders.aquaconectabackend.dashboard.domain.services.DashboardQueryService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class DashboardController {
 
     @GetMapping("/summary")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public DashboardResumenDto getDashboardResumen() {
+    public DashboardSummaryDto getDashboardResumen() {
         return dashboardQueryService.getDashboard();
     }
 }

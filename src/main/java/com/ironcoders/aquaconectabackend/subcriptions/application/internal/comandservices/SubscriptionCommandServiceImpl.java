@@ -1,74 +1,44 @@
 package com.ironcoders.aquaconectabackend.subcriptions.application.internal.comandservices;
 
-import com.ironcoders.aquaconectabackend.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
-import com.ironcoders.aquaconectabackend.management.domain.model.aggregates.SensorAggregate;
-import com.ironcoders.aquaconectabackend.management.infrastructure.persistence.jpa.repositories.SensorRepository;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.aggregates.Device;
+import com.ironcoders.aquaconectabackend.monitoring.domain.model.commads.CreateDeviceCommand;
+import com.ironcoders.aquaconectabackend.monitoring.interfaces.rest.acl.DeviceContextFacade;
+import com.ironcoders.aquaconectabackend.profiles.domain.model.aggregates.Resident;
+import com.ironcoders.aquaconectabackend.profiles.interfaces.acl.ResidentContextFacade.ResidentContextFacade;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.model.aggregates.Subscription;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.CreateSubscriptionCommand;
-import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.subscription.UpdateSubscriptionCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateAdditionalSubscriptionCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.CreateSubscriptionCommand;
+import com.ironcoders.aquaconectabackend.subcriptions.domain.model.commands.UpdateSubscriptionCommand;
 import com.ironcoders.aquaconectabackend.subcriptions.domain.services.subscription.SubscriptionCommandService;
 import com.ironcoders.aquaconectabackend.subcriptions.infrastructure.persistence.jpa.repositories.subscription.SubscriptionRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class SubscriptionCommandServiceImpl implements SubscriptionCommandService
-{
+public class SubscriptionCommandServiceImpl implements SubscriptionCommandService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final SensorRepository sensorRepository;
-    public SubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository, SensorRepository sensorRepository) {
+    private final ResidentContextFacade residentContextFacade;
+    private final DeviceContextFacade deviceContextFacade;
+
+    public SubscriptionCommandServiceImpl(
+            SubscriptionRepository subscriptionRepository,
+            ResidentContextFacade residentContextFacade,
+            DeviceContextFacade deviceContextFacade
+    ) {
         this.subscriptionRepository = subscriptionRepository;
-        this.sensorRepository = sensorRepository;
+        this.residentContextFacade = residentContextFacade;
+        this.deviceContextFacade = deviceContextFacade;
     }
 
     @Override
     public Optional<Subscription> handle(CreateSubscriptionCommand command) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        Long residentId = command.residentId();
-
-        // 1. Crear el sensor automáticamente
-        SensorAggregate sensor = new SensorAggregate(
-                "ULTRASONICO",
-                "ACTIVO",
-                "Sensor automático creado con la suscripción",
-                residentId
-        );
-        sensorRepository.save(sensor); // se genera su ID (asumiendo que es autogenerado)
-
-        // 2. Crear la suscripción y asociarle el sensor
         Subscription subscription = new Subscription(command);
-
         subscriptionRepository.save(subscription);
-
         return Optional.of(subscription);
     }
-
-
-
-    @Override
-    public void createForResident(Long residentId) {
-        // Crear el sensor asociado por defecto
-        SensorAggregate sensor = new SensorAggregate(
-                "ULTRASONICO",
-                "ACTIVO",
-                "Sensor automático creado con la suscripción",
-                residentId
-        );
-        sensorRepository.save(sensor); // se genera su ID (asumiendo que es @GeneratedValue)
-
-        // Crear la suscripción con el ID del sensor generado
-        Subscription subscription = new Subscription(residentId, sensor.getId());
-        subscriptionRepository.save(subscription);
-    }
-
-
 
     @Override
     public Optional<Subscription> handle(UpdateSubscriptionCommand command) {
@@ -92,5 +62,37 @@ public class SubscriptionCommandServiceImpl implements SubscriptionCommandServic
         return Optional.of(subscription);
     }
 
+    @Override
+    public Optional<Subscription> handle(CreateAdditionalSubscriptionCommand command) {
 
+        // Busca la suscripción existente
+        Optional<Resident> resident = residentContextFacade.findById(command.residentId());
+
+        if (resident.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Crear el dispositivo y obtener el objeto Device
+        var createDeviceCommand = new CreateDeviceCommand(
+            "IOT",
+            "ACTIVE",
+            "TDS/HC-SR04",
+            resident.get().getId()
+        );
+        Optional<Device> device = deviceContextFacade.createDevice(createDeviceCommand);
+
+        if (device.isEmpty()) {
+            return Optional.empty();
+        }
+        Subscription additionalSubscription = new Subscription(
+            command.residentId(),
+            device.get().getId(),
+            resident.get().getProviderId(),
+            command.waterTankSize()
+        );
+
+        subscriptionRepository.save(additionalSubscription);
+        return Optional.of(additionalSubscription);
+
+    }
 }
